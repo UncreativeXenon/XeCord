@@ -1,0 +1,35 @@
+# Output binaries
+build/
+
+# Everything in .vscode except for the C/C++ extension settings
+.vscode/*
+!.vscode/c_cpp_properties.json
+
+# Visual Studio files
+.vs/
+ipch/
+*.log
+*.opensdf
+*.sdf
+*.suo
+*.user
+*.userosscache
+*.opensdf
+*.cache
+*.log
+*.pdb
+*.ipch
+*.tlog
+*.db
+*.obj
+*.idb
+*.aps
+*.ncb
+*.VC.db
+*.VC.VC.opendb
+
+bin/
+obj/
+Build/
+Debug*/
+Release*/
