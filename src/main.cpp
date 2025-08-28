@@ -547,7 +547,7 @@ bool SendPresenceUpdate(TLSClient* client,
     }
 
 	sprintf_s(presenceJson, sizeof(presenceJson), 
-		"{\"op\":3,\"d\":{\"since\":0,\"activities\":[{\"name\":\"%s\",\"type\":0,\"state\":\"%s\",\"details\":\"Xbox 360\",\"platform\":\"xbox\"%s,\"assets\":{\"large_image\":\"%s\",\"large_text\":\"XeCord\"%s}}],\"status\":\"online\",\"afk\":false}}", 
+		"{\"op\":3,\"d\":{\"since\":0,\"activities\":[{\"name\":\"%s\",\"type\":0,\"state\":\"Profile: %s\",\"details\":\"Xbox 360\",\"platform\":\"xbox\"%s,\"assets\":{\"large_image\":\"%s\",\"large_text\":\"XeCord\"%s}}],\"status\":\"online\",\"afk\":false}}", 
 		name, gamertag, timestampsData, largeImage, smallImageData
 	);
 
