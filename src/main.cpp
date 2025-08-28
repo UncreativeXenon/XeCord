@@ -1032,7 +1032,7 @@ DWORD WINAPI AutoReconnectWatcher(LPVOID lpParam) {
 }
 
 DWORD WINAPI EntryPointThread(LPVOID) {
-	Sleep(5000);
+	Sleep(10000);
 
     XNetStartupParams xnsp = { sizeof(xnsp), XNET_STARTUP_BYPASS_SECURITY };
     DWORD result = XNetStartup(&xnsp);
