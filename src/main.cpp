@@ -33,6 +33,10 @@
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
 
+extern "C" {
+    extern PCHAR ExLoadedImageName;
+}
+
 using namespace rapidjson;
 
 #define MAX_CLIENTS 4
@@ -41,11 +45,14 @@ TLSClient g_Clients[MAX_CLIENTS];
 int g_ClientCount = 0;
 bool g_JustReconnected = false;
 char g_Token[128] = {0};
+char g_SessionId[33] = {0};
+char g_ShortId[17] = {0};
 int g_Dash;
 const char* g_DashList[] = {
     "FFFE07D1",
     "00000166",
-    "00000167"
+    "00000167",
+	"99999998"
 };
 
 uint32_t g_LastTitleId = 99999999;
@@ -112,7 +119,7 @@ void Notify(const wchar_t* msg) {
     HMODULE h = GetModuleHandle("xam.xex");
     XNOTIFYQUEUEUI XNotifyQueueUI = (XNOTIFYQUEUEUI)GetProcAddress(h, (LPCSTR)656);
     if (XNotifyQueueUI) {
-        XNotifyQueueUI(0, 0, XNOTIFY_SYSTEM, msg, NULL);
+        //XNotifyQueueUI(0, 0, XNOTIFY_SYSTEM, msg, NULL);
     }
 }
 
@@ -120,6 +127,54 @@ void XboxTLSLogger(const char* msg) {
     wchar_t wmsg[256];
     MultiByteToWideChar(CP_UTF8, 0, msg, -1, wmsg, 256);
     //Notify(wmsg);
+}
+
+void GenerateShortId(void) {
+    uint8_t raw[8];                 // 8 bytes = 16 hex chars
+    XeCryptRandom(raw, sizeof(raw));
+
+    for (int i = 0; i < 8; i++) {
+        sprintf_s(&g_ShortId[i * 2], 3, "%02x", raw[i]);
+    }
+}
+
+void GenerateSessionId(void) {
+    uint8_t raw[16];                // 16 random bytes = 32 hex chars
+    XeCryptRandom(raw, sizeof(raw));
+
+    // Convert each byte to two lowercase hex chars
+    for (int i = 0; i < 16; i++) {
+        sprintf_s(&g_SessionId[i * 2], 3, "%02x", raw[i]);
+    }
+}
+
+static void MakeUuidV4(char out[37]) {
+    uint8_t b[16];
+    XeCryptRandom(b, sizeof(b));        // fill with random bytes
+
+    // Set version (4) and variant (RFC 4122)
+    b[6] = (b[6] & 0x0F) | 0x40;        // version 4
+    b[8] = (b[8] & 0x3F) | 0x80;        // variant 1
+
+    // Format: 8-4-4-4-12
+    sprintf_s(out, 37,
+        "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+        b[0],b[1],b[2],b[3], b[4],b[5], b[6],b[7], b[8],b[9],
+        b[10],b[11],b[12],b[13],b[14],b[15]);
+}
+
+bool EndsWith(const char* str, const char* suffix)
+{
+    if (!str || !suffix)
+        return false;
+
+    size_t lenstr   = strlen(str);
+    size_t lensuff  = strlen(suffix);
+
+    if (lensuff > lenstr)
+        return false;
+
+    return (strcmp(str + (lenstr - lensuff), suffix) == 0);
 }
 
 bool ResolveDNS(const char* domain, char* outIp, int size) {
@@ -157,7 +212,7 @@ void createDefaultConfigIfMissing() {
                 "Token=\n"
                 "\n"
                 "[General]\n"
-                "DefaultDash=1 ; 0 = Xbox 360 Dashboard, 1 = Aurora, 2 = Freestyle 3\n"
+                "DefaultDash=2 ; 0 = Xbox 360 Dashboard, 1 = Aurora, 2 = Freestyle 3, 3 = Unknown Game\n"
             );
             fclose(file);
             Notify(L"Created default config.ini");
@@ -284,9 +339,9 @@ std::string DecodeChunkedBody(const std::string& chunked) {
 
 char* GetGameIcon(const char* token, const char titleId[16]) {
 	DWORD dwordTitleId = strtoul(titleId, nullptr, 16);
-	if (dwordTitleId == 0xFFFE07D1) return (char*)"mp:app-assets/1380960102609064008/1385422462862229565.png";
-    if (dwordTitleId == 0x00000166) return (char*)"mp:app-assets/1380960102609064008/1387868590035701791.png";
-    if (dwordTitleId == 0x00000167) return (char*)"mp:app-assets/1380960102609064008/1387868096206864537.png";
+	if (dwordTitleId == 0xFFFE07D1) return (char*)"mp:app-assets/1410522131762253927/1410522692968382586.png";
+    if (dwordTitleId == 0x00000166) return (char*)"mp:app-assets/1410522131762253927/1410523603815895132.png";
+    if (dwordTitleId == 0x00000167) return (char*)"mp:app-assets/1410522131762253927/1410522692414738493.png";
 
     if (g_ClientCount >= MAX_CLIENTS) return nullptr;  // Return nullptr if client count exceeds limit
 
@@ -297,7 +352,7 @@ char* GetGameIcon(const char* token, const char titleId[16]) {
     client->running = TRUE;
 
     const char* host = "discord.com";
-    const char* path = "/api/v9/applications/1380960102609064008/external-assets";
+    const char* path = "/api/v9/applications/1410522131762253927/external-assets";
 
     // Build the asset URL manually using strcat and strncpy
     char assetUrl[512];
@@ -432,7 +487,7 @@ bool ReadJsonFile(const char* filePath, Document& doc) {
     return true;
 }
 
-bool GetGameInfo(const Document& doc, const char* titleId, wchar_t* outName, bool* outIcon, size_t outSize) {
+bool GetGameInfo(const Document& doc, const char* titleId, wchar_t* outName, bool* outIcon, wchar_t* outId, size_t outSize) {
     if (!doc.HasMember(titleId) || !doc[titleId].IsObject()) {
 		MultiByteToWideChar(CP_UTF8, 0,"Unknown Game", -1, outName, (int)outSize);
 		*outIcon = false;
@@ -445,8 +500,14 @@ bool GetGameInfo(const Document& doc, const char* titleId, wchar_t* outName, boo
     }
     if (obj.HasMember("i") && obj["i"].IsBool()) {
         *outIcon = obj["i"].GetBool();
-		return true;
     }
+    if (obj.HasMember("id") && obj["id"].IsString()) {
+        MultiByteToWideChar(CP_UTF8, 0, obj["id"].GetString(), -1, outId, (int)outSize);
+		return true;
+    } else {
+		wcscpy_s(outId, outSize, L"99999997");
+		return true;
+	}
     return false;
 }
 
@@ -462,7 +523,7 @@ bool SendPresenceUpdate(TLSClient* client,
 						const char* gamertag,
                         uint64_t timestamp)
 {
-    char presenceJson[1024];
+    char presenceJson[2048];
 	char smallImageData[512];
     char timestampsData[128];
 	
@@ -486,8 +547,8 @@ bool SendPresenceUpdate(TLSClient* client,
     }
 
 	sprintf_s(presenceJson, sizeof(presenceJson), 
-		"{\"op\":3,\"d\":{\"since\":0,\"activities\":[{\"name\":\"%s\",\"type\":0,\"state\":\"%s\",\"details\":\"Xbox 360\",\"platform\":\"xbox\"%s,\"assets\":{\"large_image\":\"%s\",\"large_text\":\"XeCord\"%s}}],\"status\":\"online\",\"afk\":false}}", 
-		name, gamertag, timestampsData, largeImage, smallImageData
+		"{\"op\":3,\"d\":{\"since\":0,\"activities\":[{\"id\":\"%s\",\"name\":\"%s\",\"type\":0,\"created_at\":\"%llu\",\"session_id\":\"%s\",\"application_id\":\"379286085710381999\",\"state\":\"Profile: %s\",\"details\":\"Xbox 360\",\"platform\":\"xbox\",\"flags\":0%s,\"assets\":{\"large_image\":\"%s\",\"large_text\":\"XeCord\"%s}}],\"status\":\"online\",\"afk\":false}}", 
+		g_ShortId, name, (unsigned long long)(timestamp - 1), g_SessionId, gamertag, timestampsData, largeImage, smallImageData
 	);
 
     return SendWebSocketText(client, presenceJson);
@@ -512,7 +573,13 @@ DWORD WINAPI MonitorTitleId(LPVOID param) {
 
             if (client) {
 				if (strcmp(titleId, "00000000") == 0) {
-					strcpy(titleId, g_DashList[g_Dash]);
+					if (EndsWith(ExLoadedImageName, "Aurora.xex")) {
+						strcpy(titleId, g_DashList[1]);
+					} else if (EndsWith(ExLoadedImageName, "dash.xex")) {
+						strcpy(titleId, g_DashList[0]);
+					} else {
+						strcpy(titleId, g_DashList[g_Dash]);
+					}
 				};
 				char* largeAssetPath;
 				char* smallAssetPath;
@@ -532,18 +599,24 @@ DWORD WINAPI MonitorTitleId(LPVOID param) {
 				};
 				char gameName[512];
 				wchar_t gameName_t[512];
+				wchar_t trueId_t[512];
 				bool gameIcon = false;
 				Document gameTitles;
 				/*wchar_t titlemsg[256];
+				MultiByteToWideChar(CP_UTF8, 0, ExLoadedImageName, -1, titlemsg, 256);
 				MultiByteToWideChar(CP_UTF8, 0, titleId, -1, titlemsg, 256);
 				Notify(titlemsg);*/
 				if (ReadJsonFile("hdd:\\Plugins\\PluginData\\XeCord\\gameTitles.json", gameTitles)) {
-					GetGameInfo(gameTitles, titleId, gameName_t, &gameIcon, 512);
+					GetGameInfo(gameTitles, titleId, gameName_t, &gameIcon, trueId_t, 512);
+				}
+
+				if (wcscmp(trueId_t, L"99999997") != 0) {
+					WideCharToMultiByte(CP_UTF8, 0, trueId_t, -1, titleId, sizeof(titleId), NULL, NULL);
 				}
 
 				char* defaultPath = (char*)(xbOriginal 
-					? "mp:app-assets/1380960102609064008/1385426559661248553.png" 
-					: "mp:app-assets/1380960102609064008/1385422462862229565.png");
+					? "mp:app-assets/1410522131762253927/1410522692959998023.png" 
+					: "mp:app-assets/1410522131762253927/1410522692968382586.png");
 
 				if (gameIcon) {
 					largeAssetPath = GetGameIcon(g_Token, titleId);
@@ -683,7 +756,6 @@ DWORD WINAPI RecvThread(LPVOID param) {
 								}
 							}
 							if (d.HasMember("resume_gateway_url") && d["resume_gateway_url"].IsString()) {
-								Notify(L"KAKAW");
 								const char* url = d["resume_gateway_url"].GetString();
 								if (url) {
 									wchar_t wbu2f[512];
@@ -737,12 +809,56 @@ DWORD WINAPI RecvThread(LPVOID param) {
 }
 
 bool SendIdentify(TLSClient* client, const char* token) {
-    char identifyJson[2048];
-    // Build your identify JSON; fill in your token and any properties you need.
-    sprintf_s(identifyJson, sizeof(identifyJson), 
-		"{\"op\":2,\"d\":{\"token\":\"%s\",\"capabilities\":1021,\"client_state\":{\"guild_hashes\":{},\"highest_last_message_id\":\"0\",\"private_channels_version\":\"0\",\"read_state_version\":0,\"user_guild_settings_version\":-1,\"user_settings_version\":-1},\"compress\":false,\"presence\":{\"activities\":[],\"afk\":false,\"since\":0,\"status\":\"online\"},\"properties\":{\"browser\":\"Discord Client\",\"client_build_number\":152131,\"client_event_source\":null,\"client_version\":\"0.0.20\",\"os\":\"Linux\",\"os_arch\":\"x64\",\"os_version\":\"5.19.13-arch1-1\",\"release_channel\":\"stable\",\"system_locale\":\"en-GB\"}}}", 
-		token
-	);
+    char identifyJson[8192]; // bigger buffer for new payload
+	static char launchId[37] = {0};
+	if (!launchId[0]) MakeUuidV4(launchId);
+
+	static char launchSignature[37] = {0};
+	if (!launchSignature[0]) MakeUuidV4(launchSignature);
+
+	GenerateShortId();
+
+	GenerateSessionId();
+
+    sprintf_s(identifyJson, sizeof(identifyJson),
+        "{\"op\":2,\"d\":{"
+            "\"token\":\"%s\","
+            "\"capabilities\":1734653,"
+            "\"properties\":{"
+                "\"os\":\"Windows\","
+                "\"browser\":\"Discord Client\","
+                "\"release_channel\":\"stable\","
+                "\"client_version\":\"1.0.9204\","
+                "\"os_version\":\"10.0.26100\","
+                "\"os_arch\":\"x64\","
+                "\"app_arch\":\"x64\","
+                "\"system_locale\":\"en-US\","
+                "\"has_client_mods\":false,"
+				"\"client_launch_id\":\"%s\","
+                "\"browser_user_agent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9204 Chrome/134.0.6998.205 Electron/35.3.0 Safari/537.36\","
+                "\"browser_version\":\"35.3.0\","
+                "\"os_sdk_version\":\"26100\","
+                "\"client_build_number\":436889,"
+                "\"native_build_number\":67946,"
+                "\"client_event_source\":null,"
+				"\"launch_signature\":\"%s\","
+                "\"client_app_state\":\"focused\","
+                "\"is_fast_connect\":false,"
+                "\"gateway_connect_reasons\":\"AppSkeleton\""
+            "},"
+            "\"presence\":{"
+                "\"status\":\"unknown\","
+                "\"since\":0,"
+                "\"activities\":[],"
+                "\"afk\":false"
+            "},"
+            "\"compress\":false,"
+            "\"client_state\":{"
+                "\"guild_versions\":{}"
+            "}"
+        "}}",
+        token, launchId, launchSignature
+    );
 
     return SendWebSocketText(client, identifyJson);
 }
