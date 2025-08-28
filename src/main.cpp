@@ -523,7 +523,7 @@ bool SendPresenceUpdate(TLSClient* client,
 						const char* gamertag,
                         uint64_t timestamp)
 {
-    char presenceJson[2048];
+    char presenceJson[1024];
 	char smallImageData[512];
     char timestampsData[128];
 	
@@ -547,8 +547,8 @@ bool SendPresenceUpdate(TLSClient* client,
     }
 
 	sprintf_s(presenceJson, sizeof(presenceJson), 
-		"{\"op\":3,\"d\":{\"since\":0,\"activities\":[{\"id\":\"%s\",\"name\":\"%s\",\"type\":0,\"created_at\":\"%llu\",\"session_id\":\"%s\",\"application_id\":\"379286085710381999\",\"state\":\"Profile: %s\",\"details\":\"Xbox 360\",\"platform\":\"xbox\",\"flags\":0%s,\"assets\":{\"large_image\":\"%s\",\"large_text\":\"XeCord\"%s}}],\"status\":\"online\",\"afk\":false}}", 
-		g_ShortId, name, (unsigned long long)(timestamp - 1), g_SessionId, gamertag, timestampsData, largeImage, smallImageData
+		"{\"op\":3,\"d\":{\"since\":0,\"activities\":[{\"name\":\"%s\",\"type\":0,\"state\":\"%s\",\"details\":\"Xbox 360\",\"platform\":\"xbox\"%s,\"assets\":{\"large_image\":\"%s\",\"large_text\":\"XeCord\"%s}}],\"status\":\"online\",\"afk\":false}}", 
+		name, gamertag, timestampsData, largeImage, smallImageData
 	);
 
     return SendWebSocketText(client, presenceJson);
@@ -816,9 +816,9 @@ bool SendIdentify(TLSClient* client, const char* token) {
 	static char launchSignature[37] = {0};
 	if (!launchSignature[0]) MakeUuidV4(launchSignature);
 
-	GenerateShortId();
+	//GenerateShortId();
 
-	GenerateSessionId();
+	//GenerateSessionId();
 
     sprintf_s(identifyJson, sizeof(identifyJson),
         "{\"op\":2,\"d\":{"
