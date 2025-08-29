@@ -9,7 +9,7 @@ An **Xbox 360 Discord Rich Presence DashLaunch Plugin**.
 > ⚠️ Warning:
 > This uses the **Discord User Gateway** and is therefore **against Discord’s Terms of Service**.  
 > You may use this **at your own risk**.  
->That said, people have been using custom Rich Presence apps for **4–5 years** with **no known cases of Discord account termination**.  
+>That said, people have been using custom Direct User Gateway Rich Presences for **4–5 years** with no known cases of account termination.  
 
 ## 🔧 Setup
 1. **Download** the latest build from the [Releases](https://github.com/UncreativeXenon/XeCord/releases) section.  
