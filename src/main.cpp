@@ -698,6 +698,7 @@ DWORD WINAPI RecvThread(LPVOID param) {
 			if (wlen > 0) {
 				std::wstring wideStr(wlen, L'\0');
 				MultiByteToWideChar(CP_UTF8, 0, json.c_str(), -1, &wideStr[0], wlen);
+				//Notify(wideStr.c_str());
 			}
 
 			Document doc;
@@ -715,6 +716,25 @@ DWORD WINAPI RecvThread(LPVOID param) {
 			} else {
 				free(frame);
 				continue;
+			}
+
+			wchar_t msg[64];
+			_snwprintf(msg, _countof(msg), L"op = %d", op);
+			msg[_countof(msg) - 1] = L'\0';
+
+			//Notify(msg);
+
+			if (op == 0 && !isZlib) {
+				if (doc.HasMember("t")) {
+					const rapidjson::Value& tVal = doc["t"];
+					if (tVal.IsString()) {
+						const char* t = doc["t"].GetString();
+
+						if (strcmp(t, "READY") == 0) {
+							HandleReady(client);
+						}
+					}
+				}
 			}
 
 			if (op == 10) {
@@ -972,15 +992,31 @@ void ShutdownAllClients() {
 }
 
 bool TLSClient_IsDead(TLSClient* client) {
-    if (!client) return true;
-    if (!client->running) return true;
-    if (XboxTLS_HasFatalError(&client->ctx)) return true;
-    if (XboxTLS_SocketDead(&client->ctx)) return true;
-	DWORD now = GetTickCount();
-	if (now - client->lastActivityTick > 60000) return true;
+    if (!client) {
+        Notify(L"TLS dead: null client");
+        return true;
+    }
+    if (!client->running) {
+        Notify(L"TLS dead: not running");
+        return true;
+    }
+    if (XboxTLS_HasFatalError(&client->ctx)) {
+        Notify(L"TLS dead: fatal TLS error");
+        return true;
+    }
+    if (XboxTLS_SocketDead(&client->ctx)) {
+        Notify(L"TLS dead: socket dead");
+        return true;
+    }
+
+    DWORD now = GetTickCount();
+    if (now - client->lastActivityTick > 60000) {
+        Notify(L"TLS dead: inactivity timeout");
+        return true;
+    }
+
     return false;
 }
-
 
 DWORD WINAPI AutoReconnectWatcher(LPVOID lpParam) {
     for (;;) {

@@ -13,17 +13,20 @@ An **Xbox 360 Discord Rich Presence DashLaunch Plugin**.
 
 ## 🔧 Setup
 1. **Download** the latest build from the [Releases](https://github.com/UncreativeXenon/XeCord/releases) section.  
-2. **Edit `config.ini`** before installing:  
+2. **Download** [Xbdm.xex](https://consolemods.org/wiki/File:Xbdm.xex) and set it as the **first plugin in dashlaunch order**.  
+3. **Important:** The plugin at the moment requires [JRPC2.xex](https://consolemods.org/wiki/File:JRPC2.xex) (or XDRPC) to work, I'm unsure as the reason to this yet but until then this is the solution. 
+   - **Note**: Make sure to put it **after** Xbdm.xex and **before** any plugin, however if you're using a stealth server put that before JRPC2.
+4. **Edit `config.ini`** before installing:  
    - Add your **Discord User Token** to `config.ini`.  
-   - Save your changes.  
-3. **Extract** the contents of the archive to:  
+   - Save your changes.
+5. **Extract** the contents of the archive to:  
    ```
    hdd:\Plugins
    ```  
-4. **Important:** The plugin’s data file directories are **hard-coded**.  
+6. **Important:** The plugin’s data file directories are **hard-coded**.  
    - The release **must** be extracted exactly to `hdd:\Plugins`.  
    - Changing the path will cause the plugin to fail.  
-5. Load the plugin through your DashLaunch configuration.  
+7. Load the plugin through your DashLaunch configuration.  
 
 ## 🖼️ Screenshots
 <img width="353" height="152" alt="image" src="https://github.com/user-attachments/assets/a9292e7e-f894-4d7a-8a05-d7ece35c293c" />
