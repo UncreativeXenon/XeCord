@@ -339,7 +339,7 @@ std::string DecodeChunkedBody(const std::string& chunked) {
 
 char* GetGameIcon(const char* token, const char titleId[16]) {
 	DWORD dwordTitleId = strtoul(titleId, nullptr, 16);
-	if (dwordTitleId == 0xFFFE07D1) return (char*)"mp:app-assets/1410522131762253927/1410522692968382586.png";
+	if (dwordTitleId == 0xFFFE07D1) return (char*)"mp:app-assets/1410522131762253927/1417550167074406711.png";
     if (dwordTitleId == 0x00000166) return (char*)"mp:app-assets/1410522131762253927/1410523603815895132.png";
     if (dwordTitleId == 0x00000167) return (char*)"mp:app-assets/1410522131762253927/1410522692414738493.png";
 
@@ -614,15 +614,19 @@ DWORD WINAPI MonitorTitleId(LPVOID param) {
 					WideCharToMultiByte(CP_UTF8, 0, trueId_t, -1, titleId, sizeof(titleId), NULL, NULL);
 				}
 
-				char* defaultPath = (char*)(xbOriginal 
-					? "mp:app-assets/1410522131762253927/1410522692959998023.png" 
-					: "mp:app-assets/1410522131762253927/1410522692968382586.png");
+				char* defaultXboxIconPath = (char*)(
+					xbOriginal
+						? "mp:app-assets/1410522131762253927/1410522692959998023.png"
+						: (gameIcon
+							? "mp:app-assets/1410522131762253927/1410522692968382586.png"
+							: "mp:app-assets/1410522131762253927/1417550167074406711.png")
+				);
 
 				if (gameIcon) {
 					largeAssetPath = GetGameIcon(g_Token, titleId);
-					smallAssetPath = defaultPath;
+					smallAssetPath = defaultXboxIconPath;
 				} else {
-					largeAssetPath = defaultPath;
+					largeAssetPath = defaultXboxIconPath;
 					smallAssetPath = (char*)"";
 				}
 
@@ -684,8 +688,10 @@ DWORD WINAPI RecvThread(LPVOID param) {
         bool isZlib;
         char* frame = XboxTLS_ReceiveWebSocketFrame(ctx, &len, &isZlib);
 
-        if (isZlib) {
-            HandleReady(client);
+        if (isZlib && strcmp(client->host, "gateway.discord.gg") == 0) {
+			if (InterlockedCompareExchange(&client->readyHandled, 1, 0) == 0) {
+				HandleReady(client);
+			}
         }
 
         if (!frame) continue;
@@ -1032,7 +1038,7 @@ DWORD WINAPI AutoReconnectWatcher(LPVOID lpParam) {
             const char* host = "gateway.discord.gg";
             const char* path = "/?v=9&encoding=json";
             /*const char* host = defaultHost;
-            const char* path = defaultPath;
+            const char* path = defaultXboxIconPath;
 
             if (resumeGatewayURL[0] != '\0') {
                 const char* scheme = strstr(resumeGatewayURL, "wss://");
