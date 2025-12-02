@@ -149,7 +149,7 @@ static const MountMapping g_DriveMappings[] = {
 	{ NULL, NULL }
 };
 
-const uint8_t EC_DN[] = {
+uint8_t EC_DN[] = {
     0x30, 0x47, 0x31, 0x0B, 0x30, 0x09, 0x06, 0x03, 0x55, 0x04, 0x06, 0x13,
     0x02, 0x55, 0x53, 0x31, 0x22, 0x30, 0x20, 0x06, 0x03, 0x55, 0x04, 0x0A,
     0x13, 0x19, 0x47, 0x6F, 0x6F, 0x67, 0x6C, 0x65, 0x20, 0x54, 0x72, 0x75,
@@ -159,7 +159,7 @@ const uint8_t EC_DN[] = {
     0x34
 };
 
-const uint8_t EC_Q[] = {
+uint8_t EC_Q[] = {
     0x04, 0xF3, 0x74, 0x73, 0xA7, 0x68, 0x8B, 0x60, 0xAE, 0x43, 0xB8, 0x35,
     0xC5, 0x81, 0x30, 0x7B, 0x4B, 0x49, 0x9D, 0xFB, 0xC1, 0x61, 0xCE, 0xE6,
     0xDE, 0x46, 0xBD, 0x6B, 0xD5, 0x61, 0x18, 0x35, 0xAE, 0x40, 0xDD, 0x73,
@@ -407,7 +407,7 @@ bool FetchDiscordAsset(uint32_t titleId, uint32_t secId, char* outAssetId, size_
 		"Accept-Language: en-US,en;q=0.9\r\n"
         "Authorization: %s\r\n"
 		"Content-Type: application/json\r\n"
-        "Content-Length: %zu\r\n"
+        "Content-Length: %u\r\n"
         "Priority: u=1, i\r\n"
 		"Sec-Ch-Ua: \"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\"\r\n"
         "Sec-Ch-Ua-Mobile: ?0\r\n"
@@ -424,7 +424,7 @@ bool FetchDiscordAsset(uint32_t titleId, uint32_t secId, char* outAssetId, size_
         "\r\n"
         "%s",
 		g_Token.c_str(),
-        strlen(jsonBody),
+        (unsigned int)strlen(jsonBody),
 		super_props,
         jsonBody
     );
@@ -966,7 +966,7 @@ void LoadConfig(char* iniPath) {
 	g_ShowNotifications = reader.GetBoolean("General", "ShowNotifications", true);
 	g_NowPlayingNotifications = reader.GetBoolean("General", "NowPlayingNotifications", false);
 
-	g_PlayingOn = reader.GetBoolean("Presence", "PlayingOn", "xbox");
+	g_PlayingOn = reader.Get("Presence", "PlayingOn", "xbox");
 	g_ShowSmallImage = reader.GetBoolean("Presence", "ShowSmallImage", true);
 	g_ShowSmallImageOnCustomDash = reader.GetBoolean("Presence", "ShowSmallImageOnCustomDash", false);
 	g_SwapImages = reader.GetBoolean("Presence", "SwapImages", false);
@@ -1012,8 +1012,17 @@ void GatewayThread(void *pArgs)
         LoadConfig(iniPath);
         LoadGameDatabase(dbPath);
 
-		if (g_LastMountPoint && g_LastDevicePrefix) {
-			XexUtils::Fs::UnmountPath(g_LastMountPoint);
+		if (g_LastMountPoint && g_LastDevicePrefix) 
+		{
+			char safeMount[32];
+			strcpy_s(safeMount, 32, g_LastMountPoint);
+
+			size_t len = strlen(safeMount);
+			if (len > 0 && safeMount[len - 1] == '\\') {
+				safeMount[len - 1] = '\0';
+			}
+
+			XexUtils::Fs::UnmountPath(safeMount);
 		}
 
 		DiscordState* state = new DiscordState();
@@ -1046,6 +1055,8 @@ void GatewayThread(void *pArgs)
 			XexUtils::Log::Print("[XeCord] Error: Failed to connect.");
 			Sleep(5000);
 			delete state;
+
+			continue;
 		}
 
 		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
@@ -1061,8 +1072,6 @@ void GatewayThread(void *pArgs)
 
 			uint32_t activeTitleId = 0xFFFFFFFF;
 			uint32_t pendingTitleId = 0xFFFFFFFF;
-			unsigned long titleChangeTime = 0; 
-			bool waitingForSettle = false;
 
 			XexUtils::Log::Print("[XeCord] Discord Gateway Opened.");
 			
@@ -1077,23 +1086,11 @@ void GatewayThread(void *pArgs)
 				{
 					uint32_t currentTitleId = XamGetCurrentTitleId();
             
-					if (currentTitleId != activeTitleId)
+					if (activeTitleId != currentTitleId)
 					{
-						if (currentTitleId != pendingTitleId) {
-							pendingTitleId = currentTitleId;
-							titleChangeTime = GetTickCount();
-							waitingForSettle = true;
-						}
-						else if (waitingForSettle && (GetTickCount() - titleChangeTime > 3000))
-						{
-							activeTitleId = currentTitleId;
-							waitingForSettle = false;
+						activeTitleId = XamGetCurrentTitleId();
                         
-							SendPresenceUpdate(state, activeTitleId);
-						}
-					}
-					else {
-						waitingForSettle = false;
+						SendPresenceUpdate(state, activeTitleId);
 					}
 				}
 

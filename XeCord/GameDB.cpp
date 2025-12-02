@@ -1,4 +1,4 @@
-#include <fstream>
+#include <xtl.h> // Required for CreateFile, ReadFile
 #include "GameDB.h"
 #include "XexUtils.h"
 
@@ -9,7 +9,7 @@ const char* GetGameTypeString(uint8_t type) {
         case 1: return "360";
         case 2: return "Xbox1";
         case 3: return "XBLA";
-		case 4: return "Homebrew";
+        case 4: return "Homebrew";
         default: return "360";
     }
 }
@@ -18,30 +18,38 @@ bool LoadGameDatabase(const char* filePath)
 {
     XexUtils::Log::Print("[XeCord] Loading games info from: %s", filePath);
 
-    std::ifstream file(filePath, std::ios::binary | std::ios::ate);
+    HANDLE hFile = CreateFile(filePath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     
-    if (!file.is_open()) 
+    if (hFile == INVALID_HANDLE_VALUE) 
     {
         XexUtils::Log::Print("[XeCord] Failed to open file. Check if XeCordTitles.bin exists.");
         return false;
     }
 
-    std::streamsize fileSize = file.tellg();
-    
-    file.seekg(0, std::ios::beg);
-
-    if (fileSize <= 0 || fileSize % sizeof(GameEntry) != 0) 
-    {
-        XexUtils::Log::Print("[XeCord] XeCordTitles.bin file empty or corrupt size: %d", (int)fileSize);
+    LARGE_INTEGER fileSize;
+    if (!GetFileSizeEx(hFile, &fileSize)) {
+        CloseHandle(hFile);
         return false;
     }
 
-    int count = (int)fileSize / sizeof(GameEntry);
+    if (fileSize.QuadPart <= 0 || fileSize.QuadPart % sizeof(GameEntry) != 0) 
+    {
+        XexUtils::Log::Print("[XeCord] XeCordTitles.bin file empty or corrupt size: %d", (int)fileSize.QuadPart);
+        CloseHandle(hFile);
+        return false;
+    }
+
+    int count = (int)fileSize.QuadPart / sizeof(GameEntry);
     g_GameList.resize(count);
 
-    file.read((char*)g_GameList.data(), fileSize);
+    DWORD bytesRead = 0;
+    if (!ReadFile(hFile, g_GameList.data(), (DWORD)fileSize.QuadPart, &bytesRead, NULL)) {
+        XexUtils::Log::Print("[XeCord] Failed to read file content.");
+        CloseHandle(hFile);
+        return false;
+    }
 
-    file.close();
+    CloseHandle(hFile);
     
     XexUtils::Log::Print("[XeCord] Loaded XeCordTitles.bin. Found %d games.", count);
     return true;
