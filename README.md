@@ -1,6 +1,6 @@
 # XeCord  
 An **Xbox 360 Discord Rich Presence DashLaunch Plugin**.  
-> ⚙️ **Note:** Works only on **hacked Xbox 360 consoles**. If your console is not hacked, see [Related Projects](#-related-projects) for alternatives.
+> ⚙️ **Note:** Works only on **hacked Xbox 360 consoles**. If your console is not hacked, see [Related Projects](#-related-projects) for alternatives.  
 > 
 > 🎮 **Xbox Original Games Support:** Titles are supported but unlike 360 games, most lack assets and will display the default Xbox Original icon instead.  
 > 
@@ -9,24 +9,18 @@ An **Xbox 360 Discord Rich Presence DashLaunch Plugin**.
 > ⚠️ Warning:
 > This uses the **Discord User Gateway** and is therefore **against Discord’s Terms of Service**.  
 > You may use this **at your own risk**.  
->That said, people have been using custom Direct User Gateway Rich Presences for **4–5 years** with no known cases of account termination.  
+> That said, people have been using custom Direct User Gateway Rich Presences for **4–5 years** with no known cases of account termination.  
 
 ## 🔧 Setup
 1. **Download** the latest build from the [Releases](https://github.com/UncreativeXenon/XeCord/releases) section.  
 2. **Download** [Xbdm.xex](https://consolemods.org/wiki/File:Xbdm.xex) and set it as the **first plugin in dashlaunch order**.  
-3. **Important:** The plugin at the moment requires [JRPC2.xex](https://consolemods.org/wiki/File:JRPC2.xex) (or XDRPC) to work, I'm unsure as the reason to this yet but until then this is the solution. 
-   - **Note**: Make sure to put it **after** Xbdm.xex and **before** any plugin, however if you're using a stealth server put that before JRPC2.
-4. **Edit `config.ini`** before installing:  
-   - Add your **Discord User Token** to `config.ini`.  
+   - **Note**: Make sure to put it **after** Xbdm.xex.
+3. **Edit `XeCord.ini`** before moving it:  
+   - Add your **Discord User Token** to `config.ini`.
+   - Configure other options to your preference.
    - Save your changes.
-5. **Extract** the contents of the archive to:  
-   ```
-   hdd:\Plugins
-   ```  
-6. **Important:** The plugin’s data file directories are **hard-coded**.  
-   - The release **must** be extracted exactly to `hdd:\Plugins`.  
-   - Changing the path will cause the plugin to fail.  
-7. Load the plugin through your DashLaunch configuration.  
+4. Place `XeCord.ini` & `XeCordTitles.bin` in the same directory as the Plugin (`XeCord.xex`).
+5. Load the plugin through your DashLaunch configuration.  
 
 ## 🖼️ Screenshots
 <img width="353" height="152" alt="image" src="https://github.com/user-attachments/assets/a9292e7e-f894-4d7a-8a05-d7ece35c293c" />
@@ -39,14 +33,7 @@ An **Xbox 360 Discord Rich Presence DashLaunch Plugin**.
 <img width="355" height="159" alt="image" src="https://github.com/user-attachments/assets/23013223-4464-4d66-ae5c-e3e4a96b0e64" />
 <img width="349" height="145" alt="image" src="https://github.com/user-attachments/assets/f9130a0e-763b-4064-9d3a-dc459c109012" />
 
-## 📝 Project Status
-XeCord was intended to include much more customization and features.  
-But due to personal circumstances, this version was published in its current state without those features.  
-Future updates may expand functionality if time allows.  
-
 ## 🐞 Issues
-- Tested only on limited hardware setups; compatibility is unknown on other systems.
-- It's possible you'll face bugs or crashes as of the current release.
 - If you encounter issues, please open an issue with logs or reproduction steps.  
 
 ## 🔗 Related Projects
@@ -55,11 +42,13 @@ If you’re interested in similar or supporting projects, check these out:
 - [XboxUnity-Scraper](https://github.com/UncreativeXenon/XboxUnity-Scraper)
 
 ## 🤝 Contributions
-- This is primarily a **personal project**, but contributions and suggestions are welcome.  
+- This is mostly a **personal project**, but contributions and suggestions are welcome.  
 - Feel free to fork and modify it as needed.
 
 ## 🙌 Thanks To
 A big thank you to the following communities and resources for their contributions and support:
 
--  [XboxTLS](https://github.com/JakobRangel/XboxTLS) by [JakobRangel](https://github.com/JakobRangel)
+- [XexUtils](https://github.com/ClementDreptin/XexUtils) by [ClementDreptin](https://github.com/ClementDreptin)
+- [Byrom](https://github.com/Byrom90) for directory paths (lol)
+- [XboxTLS](https://github.com/JakobRangel/XboxTLS) by [JakobRangel](https://github.com/JakobRangel)
 - [Xbox360Hub Discord #coding-corner](https://xbox360hub.com/)
