@@ -530,7 +530,7 @@ void SendPresenceUpdate(DiscordState* state, uint32_t titleId)
 	uint32_t finalTitleId = titleId;
     const char* finalGameName = "Unknown Game";
 	bool finalGameIconExists = false;
-	const char* finalLargeImage = "mp:app-assets/1410522131762253927/1410522692968382586.png";
+	const char* finalLargeImage = "mp:app-assets/1410522131762253927/1417550167074406711.png";
 	const char* finalSmallImage = "";
 	const char* gameIcon = "";
 	char dynamicAssetBuffer[256] = { 0 };
