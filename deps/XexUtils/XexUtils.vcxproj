@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Xbox 360">
+      <Configuration>Debug</Configuration>
+      <Platform>Xbox 360</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Xbox 360">
+      <Configuration>Release</Configuration>
+      <Platform>Xbox 360</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{C598D106-4F6D-4505-95DE-AA896A0AC7FA}</ProjectGuid>
+    <Keyword>Xbox360Proj</Keyword>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="deps\BearSSL.vcxproj">
+      <Project>{3accdae6-bd87-4b74-8b7d-81184d11b7f3}</Project>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemGroup>
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>2010-01</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup>
+    <OutDir>$(SolutionDir)build\$(Configuration)\bin\</OutDir>
+    <IntDir>$(SolutionDir)build\$(Configuration)\obj\</IntDir>
+    <OutputFile Condition="'$(Configuration)'=='Debug'">$(OutDir)$(TargetName)d$(TargetExt)</OutputFile>
+    <OutputFile Condition="'$(Configuration)'=='Release'">$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir)\deps\BearSSL\inc</AdditionalIncludeDirectories>
+      <WarningLevel>Level4</WarningLevel>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName)\$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>$(IntDir)$(ProjectName)\%(RelativeDir)</ObjectFileName>
+      <TreatWarningAsError Condition="'$(Configuration)'=='Release'">true</TreatWarningAsError>
+      <Optimization Condition="'$(Configuration)'=='Debug'">Disabled</Optimization>
+      <Optimization Condition="'$(Configuration)'=='Release'">Full</Optimization>
+      <FunctionLevelLinking Condition="'$(Configuration)'=='Release'">true</FunctionLevelLinking>
+      <StringPooling Condition="'$(Configuration)'=='Release'">true</StringPooling>
+      <IntrinsicFunctions Condition="'$(Configuration)'=='Release'">true</IntrinsicFunctions>
+      <FavorSizeOrSpeed Condition="'$(Configuration)'=='Release'">Size</FavorSizeOrSpeed>
+      <RuntimeLibrary Condition="'$(Configuration)'=='Debug'">MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary Condition="'$(Configuration)'=='Release'">MultiThreaded</RuntimeLibrary>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;_XBOX</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release'">_XBOX</PreprocessorDefinitions>
+    </ClCompile>
+    <Lib>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|Xbox 360'">xnetd.lib</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|Xbox 360'">xnet.lib</AdditionalDependencies>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="include\XexUtils.h" />
+    <ClInclude Include="src\Assert.h" />
+    <ClInclude Include="src\Dashlaunch.h" />
+    <ClInclude Include="src\Detour.h" />
+    <ClInclude Include="src\Filesystem.h" />
+    <ClInclude Include="src\Formatter.h" />
+    <ClInclude Include="src\General.h" />
+    <ClInclude Include="src\Hypervisor.h" />
+    <ClInclude Include="src\Input.h" />
+    <ClInclude Include="src\Kernel.h" />
+    <ClInclude Include="src\Log.h" />
+    <ClInclude Include="src\Math.h" />
+    <ClInclude Include="src\Memory.h" />
+    <ClInclude Include="src\SMC.h" />
+    <ClInclude Include="src\Socket.h" />
+    <ClInclude Include="src\SystemSocket.h" />
+    <ClInclude Include="src\TlsSession.h" />
+    <ClInclude Include="src\ValueOrPtr.h" />
+    <ClInclude Include="src\Vec2.h" />
+    <ClInclude Include="src\Vec3.h" />
+    <ClInclude Include="src\Vec4.h" />
+    <ClInclude Include="src\Xam.h" />
+    <ClInclude Include="src\pch.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Dashlaunch.cpp" />
+    <ClCompile Include="src\Detour.cpp" />
+    <ClCompile Include="src\Filesystem.cpp" />
+    <ClCompile Include="src\Formatter.cpp" />
+    <ClCompile Include="src\General.cpp" />
+    <ClCompile Include="src\Hypervisor.cpp" />
+    <ClCompile Include="src\Input.cpp" />
+    <ClCompile Include="src\Log.cpp" />
+    <ClCompile Include="src\Math.cpp" />
+    <ClCompile Include="src\SMC.cpp" />
+    <ClCompile Include="src\Socket.cpp" />
+    <ClCompile Include="src\TlsSession.cpp" />
+    <ClCompile Include="src\Vec2.cpp" />
+    <ClCompile Include="src\Vec3.cpp" />
+    <ClCompile Include="src\Vec4.cpp" />
+    <ClCompile Include="src\Xam.cpp" />
+    <ClCompile Include="src\pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+</Project>

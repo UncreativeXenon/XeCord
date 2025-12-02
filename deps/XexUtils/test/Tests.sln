@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tests", "Tests.vcxproj", "{65E97963-AD56-4F22-BCA0-7F3A10DEEB35}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XexUtils", "..\XexUtils.vcxproj", "{C598D106-4F6D-4505-95DE-AA896A0AC7FA}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BearSSL", "..\deps\BearSSL.vcxproj", "{3ACCDAE6-BD87-4B74-8B7D-81184D11B7F3}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AtgFramework", "deps\AtgFramework\AtgFramework.vcxproj", "{91D208A6-9936-47FD-9659-67205C3EB0AB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Xbox 360 = Debug|Xbox 360
+		Release|Xbox 360 = Release|Xbox 360
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{65E97963-AD56-4F22-BCA0-7F3A10DEEB35}.Debug|Xbox 360.ActiveCfg = Debug|Xbox 360
+		{65E97963-AD56-4F22-BCA0-7F3A10DEEB35}.Debug|Xbox 360.Build.0 = Debug|Xbox 360
+		{65E97963-AD56-4F22-BCA0-7F3A10DEEB35}.Debug|Xbox 360.Deploy.0 = Debug|Xbox 360
+		{65E97963-AD56-4F22-BCA0-7F3A10DEEB35}.Release|Xbox 360.ActiveCfg = Release|Xbox 360
+		{65E97963-AD56-4F22-BCA0-7F3A10DEEB35}.Release|Xbox 360.Build.0 = Release|Xbox 360
+		{65E97963-AD56-4F22-BCA0-7F3A10DEEB35}.Release|Xbox 360.Deploy.0 = Release|Xbox 360
+		{C598D106-4F6D-4505-95DE-AA896A0AC7FA}.Debug|Xbox 360.ActiveCfg = Debug|Xbox 360
+		{C598D106-4F6D-4505-95DE-AA896A0AC7FA}.Debug|Xbox 360.Build.0 = Debug|Xbox 360
+		{C598D106-4F6D-4505-95DE-AA896A0AC7FA}.Debug|Xbox 360.Deploy.0 = Debug|Xbox 360
+		{C598D106-4F6D-4505-95DE-AA896A0AC7FA}.Release|Xbox 360.ActiveCfg = Release|Xbox 360
+		{C598D106-4F6D-4505-95DE-AA896A0AC7FA}.Release|Xbox 360.Build.0 = Release|Xbox 360
+		{C598D106-4F6D-4505-95DE-AA896A0AC7FA}.Release|Xbox 360.Deploy.0 = Release|Xbox 360
+		{3ACCDAE6-BD87-4B74-8B7D-81184D11B7F3}.Debug|Xbox 360.ActiveCfg = Debug|Xbox 360
+		{3ACCDAE6-BD87-4B74-8B7D-81184D11B7F3}.Debug|Xbox 360.Build.0 = Debug|Xbox 360
+		{3ACCDAE6-BD87-4B74-8B7D-81184D11B7F3}.Debug|Xbox 360.Deploy.0 = Debug|Xbox 360
+		{3ACCDAE6-BD87-4B74-8B7D-81184D11B7F3}.Release|Xbox 360.ActiveCfg = Release|Xbox 360
+		{3ACCDAE6-BD87-4B74-8B7D-81184D11B7F3}.Release|Xbox 360.Build.0 = Release|Xbox 360
+		{3ACCDAE6-BD87-4B74-8B7D-81184D11B7F3}.Release|Xbox 360.Deploy.0 = Release|Xbox 360
+		{91D208A6-9936-47FD-9659-67205C3EB0AB}.Debug|Xbox 360.ActiveCfg = Debug|Xbox 360
+		{91D208A6-9936-47FD-9659-67205C3EB0AB}.Debug|Xbox 360.Build.0 = Debug|Xbox 360
+		{91D208A6-9936-47FD-9659-67205C3EB0AB}.Debug|Xbox 360.Deploy.0 = Debug|Xbox 360
+		{91D208A6-9936-47FD-9659-67205C3EB0AB}.Release|Xbox 360.ActiveCfg = Release|Xbox 360
+		{91D208A6-9936-47FD-9659-67205C3EB0AB}.Release|Xbox 360.Build.0 = Release|Xbox 360
+		{91D208A6-9936-47FD-9659-67205C3EB0AB}.Release|Xbox 360.Deploy.0 = Release|Xbox 360
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,162 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Xbox 360">
+      <Configuration>Debug</Configuration>
+      <Platform>Xbox 360</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Xbox 360">
+      <Configuration>Release</Configuration>
+      <Platform>Xbox 360</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{3ACCDAE6-BD87-4B74-8B7D-81184D11B7F3}</ProjectGuid>
+    <Keyword>Xbox360Proj</Keyword>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>2010-01</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup>
+    <OutDir>$(SolutionDir)build\$(Configuration)\bin\</OutDir>
+    <IntDir>$(SolutionDir)build\$(Configuration)\obj\</IntDir>
+    <OutputFile Condition="'$(Configuration)'=='Debug'">$(OutDir)$(TargetName)d$(TargetExt)</OutputFile>
+    <OutputFile Condition="'$(Configuration)'=='Release'">$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir)\BearSSL\inc;$(ProjectDir)\BearSSL\src</AdditionalIncludeDirectories>
+      <WarningLevel>Level3</WarningLevel>
+      <DisableSpecificWarnings>4244</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)$(ProjectName)\%(RelativeDir)</ObjectFileName>
+      <CompileAs>Default</CompileAs>
+      <TreatWarningAsError Condition="'$(Configuration)'=='Release'">true</TreatWarningAsError>
+      <Optimization Condition="'$(Configuration)'=='Debug'">Disabled</Optimization>
+      <Optimization Condition="'$(Configuration)'=='Release'">Full</Optimization>
+      <FunctionLevelLinking Condition="'$(Configuration)'=='Release'">true</FunctionLevelLinking>
+      <StringPooling Condition="'$(Configuration)'=='Release'">true</StringPooling>
+      <IntrinsicFunctions Condition="'$(Configuration)'=='Release'">true</IntrinsicFunctions>
+      <FavorSizeOrSpeed Condition="'$(Configuration)'=='Release'">Size</FavorSizeOrSpeed>
+      <RuntimeLibrary Condition="'$(Configuration)'=='Debug'">MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary Condition="'$(Configuration)'=='Release'">MultiThreaded</RuntimeLibrary>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;_XBOX;BR_USE_WIN32_TIME=0;BR_USE_UNIX_TIME=1;inline=__inline</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release'">_XBOX;BR_USE_WIN32_TIME=0;BR_USE_UNIX_TIME=1;inline=__inline</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="BearSSL\inc\bearssl.h" />
+    <ClInclude Include="BearSSL\inc\bearssl_aead.h" />
+    <ClInclude Include="BearSSL\inc\bearssl_block.h" />
+    <ClInclude Include="BearSSL\inc\bearssl_ec.h" />
+    <ClInclude Include="BearSSL\inc\bearssl_hash.h" />
+    <ClInclude Include="BearSSL\inc\bearssl_hmac.h" />
+    <ClInclude Include="BearSSL\inc\bearssl_kdf.h" />
+    <ClInclude Include="BearSSL\inc\bearssl_pem.h" />
+    <ClInclude Include="BearSSL\inc\bearssl_prf.h" />
+    <ClInclude Include="BearSSL\inc\bearssl_rand.h" />
+    <ClInclude Include="BearSSL\inc\bearssl_rsa.h" />
+    <ClInclude Include="BearSSL\inc\bearssl_ssl.h" />
+    <ClInclude Include="BearSSL\inc\bearssl_x509.h" />
+    <ClInclude Include="BearSSL\src\config.h" />
+    <ClInclude Include="BearSSL\src\inner.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Only the bare minimum of files are included -->
+    <ClCompile Include="BearSSL\src\aead\ccm.c" />
+    <ClCompile Include="BearSSL\src\codec\ccopy.c" />
+    <ClCompile Include="BearSSL\src\codec\dec32be.c" />
+    <ClCompile Include="BearSSL\src\codec\dec32le.c" />
+    <ClCompile Include="BearSSL\src\codec\dec64be.c" />
+    <ClCompile Include="BearSSL\src\codec\enc32be.c" />
+    <ClCompile Include="BearSSL\src\codec\enc32le.c" />
+    <ClCompile Include="BearSSL\src\codec\enc64be.c" />
+    <ClCompile Include="BearSSL\src\ec\ecdsa_atr.c" />
+    <ClCompile Include="BearSSL\src\ec\ecdsa_default_vrfy_asn1.c" />
+    <ClCompile Include="BearSSL\src\ec\ecdsa_i31_bits.c" />
+    <ClCompile Include="BearSSL\src\ec\ecdsa_i31_vrfy_asn1.c" />
+    <ClCompile Include="BearSSL\src\ec\ecdsa_i31_vrfy_raw.c" />
+    <ClCompile Include="BearSSL\src\ec\ec_all_m31.c" />
+    <ClCompile Include="BearSSL\src\ec\ec_c25519_m31.c" />
+    <ClCompile Include="BearSSL\src\ec\ec_default.c" />
+    <ClCompile Include="BearSSL\src\ec\ec_p256_m31.c" />
+    <ClCompile Include="BearSSL\src\ec\ec_prime_i31.c" />
+    <ClCompile Include="BearSSL\src\ec\ec_secp256r1.c" />
+    <ClCompile Include="BearSSL\src\ec\ec_secp384r1.c" />
+    <ClCompile Include="BearSSL\src\ec\ec_secp521r1.c" />
+    <ClCompile Include="BearSSL\src\hash\ghash_ctmul.c" />
+    <ClCompile Include="BearSSL\src\hash\md5.c" />
+    <ClCompile Include="BearSSL\src\hash\multihash.c" />
+    <ClCompile Include="BearSSL\src\hash\sha1.c" />
+    <ClCompile Include="BearSSL\src\hash\sha2big.c" />
+    <ClCompile Include="BearSSL\src\hash\sha2small.c" />
+    <ClCompile Include="BearSSL\src\int\i31_add.c" />
+    <ClCompile Include="BearSSL\src\int\i31_bitlen.c" />
+    <ClCompile Include="BearSSL\src\int\i31_decmod.c" />
+    <ClCompile Include="BearSSL\src\int\i31_decode.c" />
+    <ClCompile Include="BearSSL\src\int\i31_encode.c" />
+    <ClCompile Include="BearSSL\src\int\i31_fmont.c" />
+    <ClCompile Include="BearSSL\src\int\i31_iszero.c" />
+    <ClCompile Include="BearSSL\src\int\i31_modpow.c" />
+    <ClCompile Include="BearSSL\src\int\i31_modpow2.c" />
+    <ClCompile Include="BearSSL\src\int\i31_montmul.c" />
+    <ClCompile Include="BearSSL\src\int\i31_muladd.c" />
+    <ClCompile Include="BearSSL\src\int\i31_ninv31.c" />
+    <ClCompile Include="BearSSL\src\int\i31_rshift.c" />
+    <ClCompile Include="BearSSL\src\int\i31_sub.c" />
+    <ClCompile Include="BearSSL\src\int\i31_tmont.c" />
+    <ClCompile Include="BearSSL\src\int\i32_div32.c" />
+    <ClCompile Include="BearSSL\src\mac\hmac.c" />
+    <ClCompile Include="BearSSL\src\mac\hmac_ct.c" />
+    <ClCompile Include="BearSSL\src\rand\hmac_drbg.c" />
+    <ClCompile Include="BearSSL\src\rsa\rsa_default_pkcs1_vrfy.c" />
+    <ClCompile Include="BearSSL\src\rsa\rsa_default_pub.c" />
+    <ClCompile Include="BearSSL\src\rsa\rsa_i31_pkcs1_vrfy.c" />
+    <ClCompile Include="BearSSL\src\rsa\rsa_i31_pub.c" />
+    <ClCompile Include="BearSSL\src\rsa\rsa_pkcs1_sig_unpad.c" />
+    <ClCompile Include="BearSSL\src\ssl\prf.c" />
+    <ClCompile Include="BearSSL\src\ssl\prf_md5sha1.c" />
+    <ClCompile Include="BearSSL\src\ssl\prf_sha256.c" />
+    <ClCompile Include="BearSSL\src\ssl\prf_sha384.c" />
+    <ClCompile Include="BearSSL\src\ssl\ssl_client.c" />
+    <ClCompile Include="BearSSL\src\ssl\ssl_client_default_rsapub.c" />
+    <ClCompile Include="BearSSL\src\ssl\ssl_client_full.c" />
+    <ClCompile Include="BearSSL\src\ssl\ssl_engine.c" />
+    <ClCompile Include="BearSSL\src\ssl\ssl_engine_default_aescbc.c" />
+    <ClCompile Include="BearSSL\src\ssl\ssl_engine_default_aesccm.c" />
+    <ClCompile Include="BearSSL\src\ssl\ssl_engine_default_aesgcm.c" />
+    <ClCompile Include="BearSSL\src\ssl\ssl_engine_default_chapol.c" />
+    <ClCompile Include="BearSSL\src\ssl\ssl_engine_default_descbc.c" />
+    <ClCompile Include="BearSSL\src\ssl\ssl_engine_default_ecdsa.c" />
+    <ClCompile Include="BearSSL\src\ssl\ssl_engine_default_rsavrfy.c" />
+    <ClCompile Include="BearSSL\src\ssl\ssl_hs_client.c" />
+    <ClCompile Include="BearSSL\src\ssl\ssl_io.c" />
+    <ClCompile Include="BearSSL\src\ssl\ssl_rec_cbc.c" />
+    <ClCompile Include="BearSSL\src\ssl\ssl_rec_ccm.c" />
+    <ClCompile Include="BearSSL\src\ssl\ssl_rec_chapol.c" />
+    <ClCompile Include="BearSSL\src\ssl\ssl_rec_gcm.c" />
+    <ClCompile Include="BearSSL\src\symcipher\aes_ct.c" />
+    <ClCompile Include="BearSSL\src\symcipher\aes_ct_cbcdec.c" />
+    <ClCompile Include="BearSSL\src\symcipher\aes_ct_cbcenc.c" />
+    <ClCompile Include="BearSSL\src\symcipher\aes_ct_ctr.c" />
+    <ClCompile Include="BearSSL\src\symcipher\aes_ct_ctrcbc.c" />
+    <ClCompile Include="BearSSL\src\symcipher\aes_ct_dec.c" />
+    <ClCompile Include="BearSSL\src\symcipher\aes_ct_enc.c" />
+    <ClCompile Include="BearSSL\src\symcipher\chacha20_ct.c" />
+    <ClCompile Include="BearSSL\src\symcipher\des_ct.c" />
+    <ClCompile Include="BearSSL\src\symcipher\des_ct_cbcdec.c" />
+    <ClCompile Include="BearSSL\src\symcipher\des_ct_cbcenc.c" />
+    <ClCompile Include="BearSSL\src\symcipher\des_support.c" />
+    <ClCompile Include="BearSSL\src\symcipher\poly1305_ctmul.c" />
+    <ClCompile Include="BearSSL\src\x509\x509_minimal.c" />
+  </ItemGroup>
+</Project>

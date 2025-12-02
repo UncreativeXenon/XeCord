@@ -1,0 +1,24 @@
+---
+Language: Cpp
+BasedOnStyle: Microsoft
+AccessModifierOffset: -4
+AlignAfterOpenBracket: BlockIndent
+AlignEscapedNewlines: DontAlign
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortFunctionsOnASingleLine: InlineOnly
+AlwaysBreakTemplateDeclarations: Yes
+ColumnLimit: 0 # Disabling ColumnLimit is necessary to make BreakConstructorInitializers: BeforeColumn work
+Cpp11BracedListStyle: false
+FixNamespaceComments: false
+IndentPPDirectives: BeforeHash
+KeepEmptyLinesAtTheStartOfBlocks: false
+RemoveBracesLLVM: true
+SeparateDefinitionBlocks: Always
+SortIncludes: Never # Sorting includes would be nice but pch.h always needs to be at the top
+SpaceAfterTemplateKeyword: false
+SpaceBeforeParens: ControlStatements
+SpacesInLineCommentPrefix:
+  Minimum: 1
+  Maximum: 1
+...

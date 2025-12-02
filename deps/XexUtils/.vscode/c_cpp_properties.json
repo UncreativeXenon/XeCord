@@ -1,0 +1,27 @@
+{
+    "configurations": [
+        {
+            "name": "Debug",
+            "includePath": [
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/deps/BearSSL/inc",
+                "${env:XEDK}/Source/Samples/Common",
+                "${env:XEDK}/include/xbox"
+            ],
+            "defines": ["_DEBUG", "_XBOX", "_MBCS"],
+            "intelliSenseMode": "windows-msvc-x86"
+        },
+        {
+            "name": "Release",
+            "includePath": [
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/deps/BearSSL/inc",
+                "${env:XEDK}/Source/Samples/Common",
+                "${env:XEDK}/include/xbox"
+            ],
+            "defines": ["NDEBUG", "_XBOX", "_MBCS"],
+            "intelliSenseMode": "windows-msvc-x86"
+        }
+    ],
+    "version": 4
+}
