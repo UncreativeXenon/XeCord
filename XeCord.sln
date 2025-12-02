@@ -9,24 +9,15 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BearSSL", "deps\XexUtils\de
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Xbox 360 = Debug|Xbox 360
 		Release|Xbox 360 = Release|Xbox 360
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0C497AE3-5487-48E6-B76A-4693EEB68FD4}.Debug|Xbox 360.ActiveCfg = Debug|Xbox 360
-		{0C497AE3-5487-48E6-B76A-4693EEB68FD4}.Debug|Xbox 360.Build.0 = Debug|Xbox 360
 		{0C497AE3-5487-48E6-B76A-4693EEB68FD4}.Release|Xbox 360.ActiveCfg = Release|Xbox 360
 		{0C497AE3-5487-48E6-B76A-4693EEB68FD4}.Release|Xbox 360.Build.0 = Release|Xbox 360
 		{0C497AE3-5487-48E6-B76A-4693EEB68FD4}.Release|Xbox 360.Deploy.0 = Release|Xbox 360
-		{C598D106-4F6D-4505-95DE-AA896A0AC7FA}.Debug|Xbox 360.ActiveCfg = Debug|Xbox 360
-		{C598D106-4F6D-4505-95DE-AA896A0AC7FA}.Debug|Xbox 360.Build.0 = Debug|Xbox 360
-		{C598D106-4F6D-4505-95DE-AA896A0AC7FA}.Debug|Xbox 360.Deploy.0 = Debug|Xbox 360
 		{C598D106-4F6D-4505-95DE-AA896A0AC7FA}.Release|Xbox 360.ActiveCfg = Release|Xbox 360
 		{C598D106-4F6D-4505-95DE-AA896A0AC7FA}.Release|Xbox 360.Build.0 = Release|Xbox 360
 		{C598D106-4F6D-4505-95DE-AA896A0AC7FA}.Release|Xbox 360.Deploy.0 = Release|Xbox 360
-		{3ACCDAE6-BD87-4B74-8B7D-81184D11B7F3}.Debug|Xbox 360.ActiveCfg = Debug|Xbox 360
-		{3ACCDAE6-BD87-4B74-8B7D-81184D11B7F3}.Debug|Xbox 360.Build.0 = Debug|Xbox 360
-		{3ACCDAE6-BD87-4B74-8B7D-81184D11B7F3}.Debug|Xbox 360.Deploy.0 = Debug|Xbox 360
 		{3ACCDAE6-BD87-4B74-8B7D-81184D11B7F3}.Release|Xbox 360.ActiveCfg = Release|Xbox 360
 		{3ACCDAE6-BD87-4B74-8B7D-81184D11B7F3}.Release|Xbox 360.Build.0 = Release|Xbox 360
 		{3ACCDAE6-BD87-4B74-8B7D-81184D11B7F3}.Release|Xbox 360.Deploy.0 = Release|Xbox 360

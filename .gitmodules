@@ -1,4 +1,0 @@
-[submodule "deps/XexUtils"]
-	path = deps/XexUtils
-	url = https://github.com/UncreativeXenon/XexUtils.git
-	branch = XeCord
