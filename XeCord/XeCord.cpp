@@ -1113,7 +1113,10 @@ void LoadConfig(char* iniPath) {
 
 void GatewayThread(void *pArgs)
 {
+	if (g_BootDelay < 6000) g_BootDelay = 6000;
+	
 	Sleep(g_BootDelay);
+
 
 	MountAndNormalizePath();
 
@@ -1311,6 +1314,8 @@ void GatewayThread(void *pArgs)
 
 void EpochMillisecondsThread(void* pArgs)
 {
+	Sleep(5000);
+
     static uint32_t lastSeenRawTitle = 0xFFFFFFFF;
     
     if (g_ResetTimePerGame) {
