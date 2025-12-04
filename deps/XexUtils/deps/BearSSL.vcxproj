@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Xbox 360">
@@ -50,7 +50,7 @@
       <RuntimeLibrary Condition="'$(Configuration)'=='Debug'">MultiThreadedDebug</RuntimeLibrary>
       <RuntimeLibrary Condition="'$(Configuration)'=='Release'">MultiThreaded</RuntimeLibrary>
       <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;_XBOX;BR_USE_WIN32_TIME=0;BR_USE_UNIX_TIME=1;inline=__inline</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release'">_XBOX;BR_USE_WIN32_TIME=0;BR_USE_UNIX_TIME=1;inline=__inline</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release'">NDEBUG;_XBOX;BR_USE_WIN32_TIME=0;BR_USE_UNIX_TIME=1;inline=__inline</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

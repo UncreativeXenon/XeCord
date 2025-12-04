@@ -7,16 +7,16 @@ std::vector<GameEntry> g_GameList;
 const char* GetGameTypeString(uint8_t type) {
     switch (type) {
         case 1: return "360";
-        case 2: return "Xbox1";
-        case 3: return "XBLA";
-        case 4: return "Homebrew";
+        case 2: return "XBLA";
+        case 3: return "Xbox1";
+        case 4: return "HomeBrew";
         default: return "360";
     }
 }
 
 bool LoadGameDatabase(const char* filePath) 
 {
-    XexUtils::Log::Print("[XeCord] Loading games info from: %s", filePath);
+    XexUtils::Log::Print("[XeCord] Loading titles from: %s.", filePath);
 
     HANDLE hFile = CreateFile(filePath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     
@@ -34,7 +34,7 @@ bool LoadGameDatabase(const char* filePath)
 
     if (fileSize.QuadPart <= 0 || fileSize.QuadPart % sizeof(GameEntry) != 0) 
     {
-        XexUtils::Log::Print("[XeCord] XeCordTitles.bin file empty or corrupt size: %d", (int)fileSize.QuadPart);
+        XexUtils::Log::Print("[XeCord] XeCordTitles.bin is empty or has corrupt size: %d.", (int)fileSize.QuadPart);
         CloseHandle(hFile);
         return false;
     }
@@ -44,7 +44,7 @@ bool LoadGameDatabase(const char* filePath)
 
     DWORD bytesRead = 0;
     if (!ReadFile(hFile, g_GameList.data(), (DWORD)fileSize.QuadPart, &bytesRead, NULL)) {
-        XexUtils::Log::Print("[XeCord] Failed to read file content.");
+        XexUtils::Log::Print("[XeCord] Failed to read XeCordTitles.bin.");
         CloseHandle(hFile);
         return false;
     }

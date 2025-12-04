@@ -88,7 +88,7 @@ DWORD g_BootDelay = 20000;
 bool g_ShowNotifications = true;
 bool g_NowPlayingNotifications = false;
 
-std::string g_PlayingOn = "xbox";
+char g_PlayingOn[64] = "xbox";
 bool g_ShowSmallImage = true;
 bool g_ShowSmallImageOnCustomDash=false;
 bool g_SwapImages = false;
@@ -197,10 +197,10 @@ struct DiscordState {
     }
 };
 
-void WSSend(XexUtils::Socket* socket, const char* jsonPayload);
+bool WSSend(XexUtils::Socket* socket, const char* jsonPayload);
 bool PerformHandshake(DiscordState* state);
 void SendIdentify(DiscordState* state);
-void SendHeartbeat(DiscordState* state);
+bool SendHeartbeat(DiscordState* state);
 void ProcessPacket(DiscordState* state, char* payload, int payloadLen);
 
 bool discordAuth = false;
@@ -218,22 +218,75 @@ const char* GetSafeGamertag() {
     return "Unknown User";
 }
 
+static const char* BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+void Base64Encode(const unsigned char* input, int inputLen, char* output)
+{
+    int i = 0, j = 0;
+    unsigned char char_array_3[3];
+    unsigned char char_array_4[4];
+
+    while (inputLen--)
+    {
+        char_array_3[i++] = *(input++);
+        if (i == 3)
+        {
+            char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+            char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
+            char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+            char_array_4[3] = char_array_3[2] & 0x3f;
+
+            for (i = 0; i < 4; i++) output[j++] = BASE64_CHARS[char_array_4[i]];
+            i = 0;
+        }
+    }
+
+    if (i)
+    {
+        for (int k = i; k < 3; k++) char_array_3[k] = '\0';
+
+        char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+        char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
+        char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+        char_array_4[3] = char_array_3[2] & 0x3f;
+
+        for (int k = 0; k < i + 1; k++) output[j++] = BASE64_CHARS[char_array_4[k]];
+        while (i++ < 3) output[j++] = '=';
+    }
+
+    output[j] = '\0';
+}
+
+std::string GenerateWebSocketKey()
+{
+    unsigned char randomBytes[16];
+    XeCryptRandom(randomBytes, 16);
+
+    char encoded[32];
+    Base64Encode(randomBytes, 16, encoded);
+
+    return std::string(encoded);
+}
+
 bool PerformHandshake(DiscordState* state)
 {
-    char upgradeRequest[512];
-    sprintf_s(upgradeRequest, 512,
+	std::string wsKey = GenerateWebSocketKey();
+
+    char upgradeRequest[1024];
+    sprintf_s(upgradeRequest, 1024,
         "GET /?v=9&encoding=json HTTP/1.1\r\n"
         "Host: gateway.discord.gg\r\n"
         "Connection: Upgrade\r\n"
         "Upgrade: websocket\r\n"
-        "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
+        "Sec-WebSocket-Key: %s\r\n"
         "Sec-WebSocket-Version: 13\r\n"
 		"Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits\r\n"
         "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9216 Chrome/138.0.7204.251 Electron/37.6.0 Safari/537.36\r\n"
 		"Accept-Encoding: gzip, deflate, br\r\n"
 		"Accept-Language: en-US,en;q=0.9\r\n"
         "Origin: https://discord.com\r\n"
-        "\r\n"
+        "\r\n",
+		wsKey.c_str()
     );
     
     state->socket->Send(upgradeRequest, strlen(upgradeRequest));
@@ -254,9 +307,9 @@ bool PerformHandshake(DiscordState* state)
     return true;
 }
 
-void WSSend(XexUtils::Socket* socket, const char* jsonPayload)
+bool WSSend(XexUtils::Socket* socket, const char* jsonPayload)
 {
-    if (!socket || !jsonPayload) return;
+    if (!socket || !jsonPayload) return false;
 
     size_t payloadLen = strlen(jsonPayload);
     
@@ -269,7 +322,7 @@ void WSSend(XexUtils::Socket* socket, const char* jsonPayload)
 
 	if (payloadLen > 65500) {
 		XexUtils::Log::Print("[XeCord] Error: Payload too large for WSSend!");
-		return;
+		return false;
 	}
     else if (payloadLen < 126)
     {
@@ -295,9 +348,68 @@ void WSSend(XexUtils::Socket* socket, const char* jsonPayload)
         frameData[i] = jsonPayload[i] ^ maskKey[i % 4];
     }
 
-    socket->Send(frame, frameSize);
+    int bytesSent = socket->Send(frame, frameSize);
     
     delete[] frame;
+
+    if (bytesSent <= 0) {
+        XexUtils::Log::Print("[XeCord] Error: WSSend failed. Connection dead.");
+        return false;
+    }
+    
+    return true;
+}
+
+std::string GenerateUUID()
+{
+    unsigned char bytes[16];
+    XeCryptRandom(bytes, 16);
+
+    bytes[6] = (bytes[6] & 0x0F) | 0x40;
+
+    bytes[8] = (bytes[8] & 0x3F) | 0x80;
+
+    char buffer[37];
+    sprintf_s(buffer, 37, 
+        "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+        bytes[0], bytes[1], bytes[2], bytes[3],
+        bytes[4], bytes[5],
+        bytes[6], bytes[7],
+        bytes[8], bytes[9],
+        bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15]
+    );
+
+    return std::string(buffer);
+}
+
+std::string GenerateLaunchSignature()
+{
+    unsigned char bytes[16];
+    XeCryptRandom(bytes, 16);
+	
+    bytes[6] = (bytes[6] & 0x0F) | 0x40;
+    bytes[8] = (bytes[8] & 0x3F) | 0x80;
+
+    const unsigned char modMask[16] = {
+        0x00, 0x80, 0x10, 0x10, 0x08, 0x10, 0x08, 0x00, 
+        0x20, 0x81, 0x00, 0x40, 0x01, 0x00, 0x20, 0x00 
+    };
+
+    for (int i = 0; i < 16; i++) {
+        bytes[i] &= ~modMask[i];
+    }
+
+    char buffer[37];
+    sprintf_s(buffer, 37, 
+        "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+        bytes[0], bytes[1], bytes[2], bytes[3],
+        bytes[4], bytes[5],
+        bytes[6], bytes[7],
+        bytes[8], bytes[9],
+        bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15]
+    );
+
+    return std::string(buffer);
 }
 
 bool EndsWith(const char* str, const char* suffix)
@@ -525,7 +637,7 @@ bool IsPlatformValid(const std::string& platform) {
     return false;
 }
 
-void SendPresenceUpdate(DiscordState* state, uint32_t titleId)
+bool SendPresenceUpdate(DiscordState* state, uint32_t titleId)
 {
 	uint32_t finalTitleId = titleId;
     const char* finalGameName = "Unknown Game";
@@ -703,8 +815,10 @@ void SendPresenceUpdate(DiscordState* state, uint32_t titleId)
 		XexUtils::Xam::XNotify(nowshowingtext, XexUtils::Xam::XNOTIFYUI_TYPE_FRIENDONLINE);
 	}
 
-    WSSend(state->socket, json);
+    bool result = WSSend(state->socket, json);
     delete[] json;
+
+	return result;
 }
 
 void SendIdentify(DiscordState* state)
@@ -712,7 +826,10 @@ void SendIdentify(DiscordState* state)
     XexUtils::Log::Print("[XeCord] Sending Discord Identify.");
 
     const int BUF_SIZE = 8192;
-    char* json = new char[BUF_SIZE]; 
+    char* json = new char[BUF_SIZE];
+
+	std::string launchId = GenerateUUID();
+	std::string launchSig = GenerateLaunchSignature();
 
     sprintf_s(json, BUF_SIZE, 
         "{\"op\":2,\"d\":{"
@@ -735,7 +852,7 @@ void SendIdentify(DiscordState* state)
                 "\"client_build_number\":474029,"
                 "\"native_build_number\":72385,"
                 "\"client_event_source\":null,"
-                "\"launch_signature\":\"788b0094-1ca9-4a21-b44b-c8e7e1f9cfa6\","
+                "\"launch_signature\":\"%s\","
                 "\"client_app_state\":\"focused\","
                 "\"is_fast_connect\":false,"
                 "\"gateway_connect_reasons\":\"AppSkeleton\""
@@ -752,14 +869,15 @@ void SendIdentify(DiscordState* state)
             "}"
         "}}",
 		g_Token.c_str(),
-		"ae454bc8-58de-4744-b0da-5a6252dc3123"
+		launchId.c_str(),
+		launchSig.c_str()
 	);
 
 	WSSend(state->socket, json);
     delete[] json;
 }
 
-void SendHeartbeat(DiscordState* state)
+bool SendHeartbeat(DiscordState* state)
 {
     unsigned long currentTime = GetTickCount();
     
@@ -771,11 +889,17 @@ void SendHeartbeat(DiscordState* state)
         else 
             sprintf_s(json, 64, "{\"op\": 1, \"d\": %d}", state->lastSequence);
 
-        WSSend(state->socket, json);
+        if (!WSSend(state->socket, json)) {
+            return false; 
+        }
+
         state->lastHeartbeatTime = currentTime;
 
 		// XexUtils::Log::Print("[XeCord] Discord Heartbeat Sent with seq value: %d!", state->lastSequence);
+		return true;
     }
+
+	return true;
 }
 
 bool ParseJSONInt(const char* fullPayload, int payloadLen, const char* key, int* outValue)
@@ -958,7 +1082,7 @@ HRESULT MountAndNormalizePath()
 void LoadConfig(char* iniPath) {
 	INIReader reader(iniPath);
 
-	XexUtils::Log::Print("[XeCord] Loading XeCord.ini config");
+	XexUtils::Log::Print("[XeCord] Loading config from: %s.", iniPath);
 
 	g_Token = reader.Get("Discord", "Token", "DISCORD_TOKEN");
 
@@ -966,7 +1090,8 @@ void LoadConfig(char* iniPath) {
 	g_ShowNotifications = reader.GetBoolean("General", "ShowNotifications", true);
 	g_NowPlayingNotifications = reader.GetBoolean("General", "NowPlayingNotifications", false);
 
-	g_PlayingOn = reader.Get("Presence", "PlayingOn", "xbox");
+	std::string playingOnStr = reader.Get("Presence", "PlayingOn", "xbox");
+	strcpy_s(g_PlayingOn, 64, playingOnStr.c_str());
 	g_ShowSmallImage = reader.GetBoolean("Presence", "ShowSmallImage", true);
 	g_ShowSmallImageOnCustomDash = reader.GetBoolean("Presence", "ShowSmallImageOnCustomDash", false);
 	g_SwapImages = reader.GetBoolean("Presence", "SwapImages", false);
@@ -982,48 +1107,52 @@ void LoadConfig(char* iniPath) {
 	g_ShowProfile = reader.GetBoolean("Presence", "ShowProfile", true);
 	g_ResetTimePerGame = reader.GetBoolean("Presence", "ResetTimePerGame", true);
 	g_FallbackDash = reader.GetInteger("General", "FallbackDash", 1);
+
+	XexUtils::Log::Print("[XeCord] Loaded XeCord.ini.");
 }
 
 void GatewayThread(void *pArgs)
 {
-	while (true) {
-        Sleep(g_BootDelay);
-        
-        MountAndNormalizePath();
+	Sleep(g_BootDelay);
 
-		char tempFilename[MAX_PATH];
+	MountAndNormalizePath();
 
-        char* lastSlash = strrchr(pluginPath, '\\');
+	char tempFilename[MAX_PATH];
 
-        if (lastSlash) {
-			strcpy_s(tempFilename, MAX_PATH, lastSlash + 1);
+    char* lastSlash = strrchr(pluginPath, '\\');
 
-            *lastSlash = '\0'; 
+    if (lastSlash) {
+		strcpy_s(tempFilename, MAX_PATH, lastSlash + 1);
 
-            sprintf_s(iniPath, MAX_PATH, "%s\\%s", pluginPath, "XeCord.ini"); 
-            sprintf_s(dbPath, MAX_PATH, "%s\\%s", pluginPath, "XeCordTitles.bin");
+        *lastSlash = '\0'; 
 
-			sprintf_s(pluginPath, MAX_PATH, "%s\\%s", pluginPath, tempFilename);
-        } else {
-            strcpy_s(iniPath, MAX_PATH, "XeCord.ini"); 
-            strcpy_s(dbPath, MAX_PATH, "XeCordTitles.bin"); 
-        }
+        sprintf_s(iniPath, MAX_PATH, "%s\\%s", pluginPath, "XeCord.ini"); 
+        sprintf_s(dbPath, MAX_PATH, "%s\\%s", pluginPath, "XeCordTitles.bin");
 
-        LoadConfig(iniPath);
-        LoadGameDatabase(dbPath);
+		sprintf_s(pluginPath, MAX_PATH, "%s\\%s", pluginPath, tempFilename);
+    } else {
+        strcpy_s(iniPath, MAX_PATH, "XeCord.ini"); 
+        strcpy_s(dbPath, MAX_PATH, "XeCordTitles.bin"); 
+    }
 
-		if (g_LastMountPoint && g_LastDevicePrefix) 
-		{
-			char safeMount[32];
-			strcpy_s(safeMount, 32, g_LastMountPoint);
+    LoadConfig(iniPath);
+    LoadGameDatabase(dbPath);
 
-			size_t len = strlen(safeMount);
-			if (len > 0 && safeMount[len - 1] == '\\') {
-				safeMount[len - 1] = '\0';
-			}
+	if (g_LastMountPoint && g_LastDevicePrefix) 
+	{
+		char safeMount[32];
+		strcpy_s(safeMount, 32, g_LastMountPoint);
 
-			XexUtils::Fs::UnmountPath(safeMount);
+		size_t len = strlen(safeMount);
+		if (len > 0 && safeMount[len - 1] == '\\') {
+			safeMount[len - 1] = '\0';
 		}
+
+		XexUtils::Fs::UnmountPath(safeMount);
+	}
+
+	while (true) {
+		Sleep(5000);
 
 		DiscordState* state = new DiscordState();
 		state->isConnected = false;
@@ -1090,11 +1219,19 @@ void GatewayThread(void *pArgs)
 					{
 						activeTitleId = XamGetCurrentTitleId();
                         
-						SendPresenceUpdate(state, activeTitleId);
+						if (!SendPresenceUpdate(state, activeTitleId)) {
+							 XexUtils::Log::Print("[XeCord] Error: Presence update failed. Disconnecting...");
+							 state->isConnected = false;
+							 break;
+						 }
 					}
 				}
 
-				SendHeartbeat(state);
+				if (!SendHeartbeat(state)) {
+					XexUtils::Log::Print("[XeCord] Error: Heartbeat send failed. Disconnecting...");
+					state->isConnected = false;
+					break;
+				}
 
 				int len = state->socket->Receive(state->recvBuffer, 8191);
 
@@ -1149,9 +1286,17 @@ void GatewayThread(void *pArgs)
 				}
 				else
 				{
-					int err = WSAGetLastError();
-					if (err != 10060 && err != 0) {
-						XexUtils::Log::Print("[XeCord] Disconnected: %d.", err);
+					if (len <= 0)
+					{
+						int err = WSAGetLastError();
+
+						if (err == 10060) {
+							continue;
+							break;
+						}
+						
+						XexUtils::Log::Print("[XeCord] Error: Connection Closed. Bytes: %d, Code: %d", len, err);
+						state->isConnected = false;
 						break;
 					}
 				}
@@ -1159,7 +1304,7 @@ void GatewayThread(void *pArgs)
 		}
 
 		delete state;
-		XexUtils::Log::Print("[XeCord] Connection lost. Reconnecting in 5 seconds...");
+		XexUtils::Log::Print("[XeCord] Error: Connection lost. Reconnecting in 5 seconds...");
 		Sleep(5000);
 	}
 }

@@ -273,16 +273,67 @@ inline int ini_parse_file(FILE *file, ini_handler handler, void *user) {
   return ini_parse_stream((ini_reader)fgets, file, handler, user);
 }
 
+struct MemReaderCtx {
+    char* ptr;
+    char* end;
+};
+
+inline static char* INI_MemoryReader(char* str, int num, void* stream) {
+    MemReaderCtx* c = (MemReaderCtx*)stream;
+    
+    if (c->ptr >= c->end) return NULL;
+
+    int i = 0;
+    while (i < num - 1 && c->ptr < c->end) {
+        char ch = *c->ptr++;
+        str[i++] = ch;
+        if (ch == '\n') break;
+    }
+    str[i] = '\0';
+    return str;
+}
+
 /* See documentation in header file. */
 inline int ini_parse(const char *filename, ini_handler handler, void *user) {
-  FILE *file;
-  int error;
+  HANDLE hFile = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+  if (hFile == INVALID_HANDLE_VALUE) {
+      return -1;
+  }
 
-  file = fopen(filename, "r");
-  if (!file)
-    return -1;
-  error = ini_parse_file(file, handler, user);
-  fclose(file);
+  LARGE_INTEGER fileSize;
+  if (!GetFileSizeEx(hFile, &fileSize)) {
+      CloseHandle(hFile);
+      return -1;
+  }
+
+  int size = (int)fileSize.QuadPart;
+  if (size <= 0) {
+      CloseHandle(hFile);
+      return -1;
+  }
+
+  char* fileBuffer = (char*)malloc(size + 1);
+  if (!fileBuffer) {
+      CloseHandle(hFile);
+      return -2;
+  }
+
+  DWORD bytesRead = 0;
+  if (!ReadFile(hFile, fileBuffer, size, &bytesRead, NULL)) {
+      free(fileBuffer);
+      CloseHandle(hFile);
+      return -1;
+  }
+  fileBuffer[bytesRead] = '\0';
+  CloseHandle(hFile);
+
+  MemReaderCtx ctx;
+  ctx.ptr = fileBuffer;
+  ctx.end = fileBuffer + bytesRead;
+
+  int error = ini_parse_stream(INI_MemoryReader, &ctx, handler, user);
+
+  free(fileBuffer);
   return error;
 }
 

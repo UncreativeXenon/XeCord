@@ -124,9 +124,9 @@ public:
     /// @param eSize The amount of bytes in `e`.
     /// @return `S_OK` on success, `E_FAIL` on error.
     HRESULT AddRsaTrustAnchor(const uint8_t *dn, size_t dnSize, const uint8_t *n, size_t nSize, const uint8_t *e, size_t eSize);
-
-    SOCKET m_Socket;
     
+    SOCKET m_Socket;
+
 private:
     std::string m_Domain;
     uint16_t m_Port;
