@@ -106,6 +106,7 @@ bool g_ResetTimePerGame = true;
 int g_FallbackDash = 1;
 
 bool discordFirstConnect = true;
+bool wasGameShown = false;
 
 const uint32_t g_DashList[] = {
     0xFFFE07D1, // Xbox 360 Dash
@@ -628,6 +629,20 @@ unsigned long long GetEpochMilliseconds()
     return (largeInt.QuadPart - UNIX_TIME_START) / TICKS_PER_MILLISECOND;
 }
 
+uint64_t GetValidEpoch() {
+    const uint64_t MIN_VALID_EPOCH = 1167609600000ULL; // Jan 1, 2007
+    uint64_t epoch = 0;
+
+    do {
+        epoch = GetEpochMilliseconds();
+        if (epoch < MIN_VALID_EPOCH) {
+            Sleep(100);
+        }
+    } while (epoch < MIN_VALID_EPOCH);
+
+    return epoch;
+}
+
 bool IsPlatformValid(const std::string& platform) {
     for (size_t i = 0; i < g_ValidPlatformCount; ++i) {
         if (platform == g_ValidPlatforms[i]) { 
@@ -808,10 +823,11 @@ bool SendPresenceUpdate(DiscordState* state, uint32_t titleId)
 		(titleId == 0xFFFE07D2) ? "Xbox Original" : "Xbox 360"
     );
 
-	if (g_ShowNotifications && g_NowPlayingNotifications) {
+	if (g_ShowNotifications && g_NowPlayingNotifications && !wasGameShown) {
 		std::stringstream nowshowingtexts;
 		nowshowingtexts << "XeCord - Now Showing: " << finalGameName;
 		std::string nowshowingtext = nowshowingtexts.str();
+		wasGameShown = true;
 		XexUtils::Xam::XNotify(nowshowingtext, XexUtils::Xam::XNOTIFYUI_TYPE_FRIENDONLINE);
 	}
 
@@ -1319,7 +1335,7 @@ void EpochMillisecondsThread(void* pArgs)
     static uint32_t lastSeenRawTitle = 0xFFFFFFFF;
     
     if (g_ResetTimePerGame) {
-        g_EpochMillisecondsStart = GetEpochMilliseconds();
+		g_EpochMillisecondsStart = GetValidEpoch();
         lastSeenRawTitle = XamGetCurrentTitleId();
     }
 
@@ -1331,7 +1347,8 @@ void EpochMillisecondsThread(void* pArgs)
 
             if (currentTitle != lastSeenRawTitle)
             {
-                g_EpochMillisecondsStart = GetEpochMilliseconds();
+                g_EpochMillisecondsStart = GetValidEpoch();
+				wasGameShown = false;
                 lastSeenRawTitle = currentTitle;
             }
         }
