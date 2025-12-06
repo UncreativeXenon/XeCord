@@ -1,5 +1,5 @@
 # XeCord  
-An **Xbox 360 Discord Rich Presence DashLaunch Plugin**.  
+An **Xbox 360 Discord Rich Presence Plugin**.  
 > ⚙️ **Note:** Works only on **hacked Xbox 360 consoles**. If your console is not hacked, see [Related Projects](#-related-projects) for alternatives.  
 > 
 > 🎮 **Xbox Original Games Support:** Titles are supported but unlike 360 games, most lack assets and will display the default Xbox Original icon instead.  
@@ -13,14 +13,14 @@ An **Xbox 360 Discord Rich Presence DashLaunch Plugin**.
 
 ## 🔧 Setup
 1. **Download** the latest build from the [Releases](https://github.com/UncreativeXenon/XeCord/releases) section.  
-2. **Download** [Xbdm.xex](https://consolemods.org/wiki/File:Xbdm.xex) and set it as the **first plugin in dashlaunch order**.  
+2. **Download** [Xbdm.xex](https://consolemods.org/wiki/File:Xbdm.xex) and set it as the **first plugin in `launch.ini` order**.  
    - **Note**: Make sure to put it **after** Xbdm.xex.
 3. **Edit `XeCord.ini`** before moving it:  
    - Add your **Discord User Token** to `config.ini`.
    - Configure other options to your preference.
    - Save your changes.
 4. Place `XeCord.ini` & `XeCordTitles.bin` in the same directory as the Plugin (`XeCord.xex`).
-5. Load the plugin through your DashLaunch configuration.  
+5. Load the plugin through your `launch.ini` configuration.  
 
 ## 🖼️ Screenshots
 <img width="353" height="152" alt="image" src="https://github.com/user-attachments/assets/a9292e7e-f894-4d7a-8a05-d7ece35c293c" />
