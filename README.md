@@ -36,18 +36,18 @@ An **Xbox 360 Discord Rich Presence Plugin**.
 - If you encounter issues, please open an issue with logs or reproduction steps.  
 
 ## 🔗 Related Projects
-If you’re interested in similar or supporting projects, check these out:  
+If you’re interested in similar projects or supporting them, check these out:  
 - [Xbox-Rich-Presence-Discord](https://github.com/MrCoolAndroid/Xbox-Rich-Presence-Discord) by [MrCoolAndroid](https://github.com/MrCoolAndroid)
 - [XboxUnity-Scraper](https://github.com/UncreativeXenon/XboxUnity-Scraper)
 
 ## 🤝 Contributions
-- This is mostly a **personal project**, but contributions and suggestions are welcome.  
+- This is mostly a personal project, but contributions and suggestions are welcome.  
 - Feel free to fork and modify it as needed.
 
 ## 🙌 Thanks To
 A big thank you to the following communities and resources for their contributions and support:
 
 - [XexUtils](https://github.com/ClementDreptin/XexUtils) by [ClementDreptin](https://github.com/ClementDreptin)
-- [Byrom](https://github.com/Byrom90) for directory paths (lol)
+- [Byrom](https://github.com/Byrom90) for mount paths (lol)
 - [XboxTLS](https://github.com/JakobRangel/XboxTLS) by [JakobRangel](https://github.com/JakobRangel)
 - [Xbox360Hub Discord #coding-corner](https://xbox360hub.com/)
