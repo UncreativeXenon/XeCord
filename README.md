@@ -15,7 +15,7 @@ An **Xbox 360 Discord Rich Presence Plugin**.
 1. **Download** the latest build from the [Releases](https://github.com/UncreativeXenon/XeCord/releases) section.  
 2. **Download** [Xbdm.xex](https://consolemods.org/wiki/File:Xbdm.xex) and set it as the **first plugin in `launch.ini` order**.  
 3. **Edit `XeCord.ini`** before moving it:  
-   - Add your **Discord User Token** to `config.ini`.
+   - Add your **Discord User Token** to `XeCord.ini`.
    - Configure other options to your preference.
    - Save your changes.
 4. Place `XeCord.ini` & `XeCordTitles.bin` in the same directory as the Plugin (`XeCord.xex`).
