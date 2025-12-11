@@ -12,14 +12,14 @@ An **Xbox 360 Discord Rich Presence Plugin**.
 > That said, people have been using custom Direct User Gateway Rich Presences for **4–5 years** with no known cases of account termination.  
 
 ## 🔧 Setup
-1. **Download** the latest build from the [Releases](https://github.com/UncreativeXenon/XeCord/releases) section.  
-2. **Download** [Xbdm.xex](https://consolemods.org/wiki/File:Xbdm.xex) and set it as the **first plugin in `launch.ini` order**.  
-3. **Edit `XeCord.ini`** before moving it:  
+1. **Download** [Xbdm.xex](https://consolemods.org/wiki/File:Xbdm.xex) and add it as the **first plugin in `launch.ini`**.  
+2. **Download** the latest build from the [Releases](https://github.com/UncreativeXenon/XeCord/releases) section.  
+3. **Edit** `XeCord.ini` before moving it:  
    - Add your **Discord User Token** to `XeCord.ini`.
    - Configure other options to your preference.
    - Save your changes.
-4. Place `XeCord.ini` & `XeCordTitles.bin` in the same directory as the Plugin (`XeCord.xex`).
-5. Load the plugin through your `launch.ini` configuration.  
+4. **Place** `XeCord.ini` and `XeCordTitles.bin` in the same folder as `XeCord.xex`.
+5. **Add** `XeCord.xex` to `launch.ini` plugin list.  
 
 ## 🖼️ Screenshots
 <img width="353" height="152" alt="image" src="https://github.com/user-attachments/assets/a9292e7e-f894-4d7a-8a05-d7ece35c293c" />
