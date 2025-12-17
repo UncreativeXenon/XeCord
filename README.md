@@ -45,7 +45,7 @@ An **Xbox 360 Discord Rich Presence Plugin**.
 
 ## 🛠️ Troubleshooting
 
-- Q: **_"Some people cannot see my Activity although I can."_**\
+- Q: **_"Some people cannot see my activity although I can."_**\
   A: Make sure your Activity Privacy options are set to "Share in all servers".
   ![Activity Privacy Settings](./assets/privacy-all-servers.png)
 
