@@ -685,7 +685,7 @@ bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
 			finalTitleId = g_DashList[g_FallbackDash];
 	} else if (titleId == 0xFFFE07D2) {
 		finalTitleId = GetXbox1TID("game:\\default.xbe");
-		if (finalTitleId == 0x00000000) finalTitleId == 0x01234567;
+		if (finalTitleId == 0x00000000) finalTitleId = 0x01234567;
 	}
 
 	for (size_t i = 0; i < g_GameList.size(); i++) {
