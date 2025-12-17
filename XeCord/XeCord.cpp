@@ -1288,7 +1288,6 @@ void GatewayThread(void *pArgs) {
 			           (const char *)&timeoutMs, sizeof(timeoutMs));
 
 			uint32_t activeTitleId = 0x01234567;
-			uint32_t pendingTitleId = 0x01234567;
 
 			static uint64_t lastSentTimestamp = 0;
 			std::string lastSentGamertag = "";
@@ -1305,13 +1304,13 @@ void GatewayThread(void *pArgs) {
 			while (state->isConnected) {
 				if (state->isAuthenticated) {
 					uint32_t currentTitleId = XamGetCurrentTitleId();
-					const char* currentGamertag = GetSafeGamertag();
+					std::string currentGamertag = GetSafeGamertag();
 
 					if (activeTitleId != currentTitleId ||
 						lastSentTimestamp != g_EpochMillisecondsStart ||
 						lastSentGamertag != currentGamertag)
 					{
-						activeTitleId = XamGetCurrentTitleId();
+						activeTitleId = currentTitleId;
 						lastSentTimestamp = g_EpochMillisecondsStart;
 						lastSentGamertag = currentGamertag;
 
