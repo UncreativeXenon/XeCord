@@ -409,25 +409,35 @@ bool EndsWith(const char *str, const char *suffix) {
 }
 
 DWORD GetXbox1TID(const char *path) {
-	HANDLE hFile = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, NULL,
-	                          OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-
-	if (hFile == INVALID_HANDLE_VALUE)
-		return 0;
-
 	DWORD titleId = 0;
 	DWORD bytesRead = 0;
+	HANDLE hFile = INVALID_HANDLE_VALUE;
 
-	if (SetFilePointer(hFile, 0x18C, NULL, FILE_BEGIN) !=
-	    INVALID_SET_FILE_POINTER) {
-		ReadFile(hFile, &titleId, sizeof(uint32_t), &bytesRead, NULL);
-	}
+	for (int i = 0; i < 5; i++) {
+		hFile = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, NULL,
+                           OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
-	CloseHandle(hFile);
+        if (hFile != INVALID_HANDLE_VALUE) {
+            break;
+        }
 
-	if (bytesRead == sizeof(uint32_t)) {
-		return _byteswap_ulong(titleId);
-	}
+        Sleep(500);
+    }
+
+	if (hFile == INVALID_HANDLE_VALUE) {
+        return 0;
+    }
+
+	if (SetFilePointer(hFile, 0x18C, NULL, FILE_BEGIN) != INVALID_SET_FILE_POINTER) {
+        ReadFile(hFile, &titleId, sizeof(uint32_t), &bytesRead, NULL);
+    }
+
+    CloseHandle(hFile);
+
+    if (bytesRead == sizeof(uint32_t)) {
+        return _byteswap_ulong(titleId);
+    }
+
 	return 0;
 }
 
@@ -675,6 +685,7 @@ bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
 			finalTitleId = g_DashList[g_FallbackDash];
 	} else if (titleId == 0xFFFE07D2) {
 		finalTitleId = GetXbox1TID("game:\\default.xbe");
+		if (finalTitleId == 0x00000000) finalTitleId == 0x01234567;
 	}
 
 	for (size_t i = 0; i < g_GameList.size(); i++) {
@@ -750,10 +761,6 @@ bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
 		    "mp:app-assets/1410522131762253927/1417550167074406711.png";
 		finalSmallImage = "";
 	}
-
-	XexUtils::Log::Print(
-	    "[XeCord] Game Changed! Updating Presence to: %s (%08X).",
-	    finalGameName, finalTitleId);
 
 	if (!g_ShowGameIcon) {
 		finalLargeImage =
@@ -845,6 +852,10 @@ bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
 		                   << g_EpochMillisecondsStart << "},";
 
 	std::string epochmilliseconds = epochmillisecondss.str();
+
+	XexUtils::Log::Print(
+	    "[XeCord] Game Changed! Updating Presence to: %s (%08X).",
+	    finalGameName, finalTitleId);
 
 	sprintf_s(json, BUF_SIZE,
 	          "{\"op\":3,\"d\":{"
@@ -1276,8 +1287,8 @@ void GatewayThread(void *pArgs) {
 			setsockopt(ds->m_Socket, SOL_SOCKET, SO_RCVTIMEO,
 			           (const char *)&timeoutMs, sizeof(timeoutMs));
 
-			uint32_t activeTitleId = 0xFFFFFFFF;
-			uint32_t pendingTitleId = 0xFFFFFFFF;
+			uint32_t activeTitleId = 0x01234567;
+			uint32_t pendingTitleId = 0x01234567;
 
 			XexUtils::Log::Print("[XeCord] Discord Gateway Opened.");
 
@@ -1391,7 +1402,7 @@ void GatewayThread(void *pArgs) {
 void EpochMillisecondsThread(void *pArgs) {
 	Sleep(5000);
 
-	static uint32_t lastSeenRawTitle = 0xFFFFFFFF;
+	static uint32_t lastSeenRawTitle = 0x01234567;
 
 	if (g_ResetTimePerGame) {
 		g_EpochMillisecondsStart = GetValidEpoch();
