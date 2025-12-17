@@ -492,18 +492,18 @@ bool FetchDiscordAsset(uint32_t titleId, uint32_t secId, char *outAssetId,
 	char *iconUrl = tempBuffer;
 	if (secId != 0)
 		sprintf_s(iconUrl, 256,
-		          "https://raw.githubusercontent.com/UncreativeXenon/"
-		          "XboxUnity-Scraper/refs/heads/master/Icons/%08X.png",
+		          "https://cdn.jsdelivr.net/gh/uncreativexenon/"
+		          "xboxunity-scraper@master/Icons/%08X.png",
 		          secId);
 	else if (titleId == 0x5841149E)
 		sprintf_s(iconUrl, 256,
-		          "https://raw.githubusercontent.com/UncreativeXenon/"
-		          "XboxUnity-Scraper/refs/heads/master/Icons/%s.png",
+		          "https://cdn.jsdelivr.net/gh/uncreativexenon/"
+		          "xboxunity-scraper@master/Icons/%s.png",
 		          "5841149E_1");
 	else
 		sprintf_s(iconUrl, 256,
-		          "https://raw.githubusercontent.com/UncreativeXenon/"
-		          "XboxUnity-Scraper/refs/heads/master/Icons/%08X.png",
+		          "https://cdn.jsdelivr.net/gh/uncreativexenon/"
+		          "xboxunity-scraper@master/Icons/%08X.png",
 		          titleId);
 
 	char *jsonBody = tempBuffer + 256;
