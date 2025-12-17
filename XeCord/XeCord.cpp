@@ -1411,22 +1411,19 @@ void GatewayThread(void *pArgs) {
 void EpochMillisecondsThread(void *pArgs) {
 	Sleep(5000);
 
-	static uint32_t lastSeenRawTitle = 0x01234567;
-
-	if (g_ResetTimePerGame) {
-		g_EpochMillisecondsStart = GetValidEpoch();
-		lastSeenRawTitle = XamGetCurrentTitleId();
-	}
+	wasGameShown = false;
+	g_EpochMillisecondsStart = GetValidEpoch();
+	static uint32_t lastSeenRawTitle;
+	lastSeenRawTitle = XamGetCurrentTitleId();
 
 	while (true) {
-		if (g_ResetTimePerGame) {
-			uint32_t currentTitle = XamGetCurrentTitleId();
-
-			if (currentTitle != lastSeenRawTitle) {
+		uint32_t currentTitle = XamGetCurrentTitleId();
+		if (currentTitle != lastSeenRawTitle) {
+			wasGameShown = false;
+			if (g_ResetTimePerGame) {
 				g_EpochMillisecondsStart = GetValidEpoch();
-				wasGameShown = false;
-				lastSeenRawTitle = currentTitle;
 			}
+			lastSeenRawTitle = currentTitle;
 		}
 
 		Sleep(1000);
