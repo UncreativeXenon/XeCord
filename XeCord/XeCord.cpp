@@ -1290,6 +1290,9 @@ void GatewayThread(void *pArgs) {
 			uint32_t activeTitleId = 0x01234567;
 			uint32_t pendingTitleId = 0x01234567;
 
+			static uint64_t lastSentTimestamp = 0;
+			std::string lastSentGamertag = "";
+
 			XexUtils::Log::Print("[XeCord] Discord Gateway Opened.");
 
 			if (g_ShowNotifications && discordFirstConnect) {
@@ -1302,9 +1305,15 @@ void GatewayThread(void *pArgs) {
 			while (state->isConnected) {
 				if (state->isAuthenticated) {
 					uint32_t currentTitleId = XamGetCurrentTitleId();
+					const char* currentGamertag = GetSafeGamertag();
 
-					if (activeTitleId != currentTitleId) {
+					if (activeTitleId != currentTitleId ||
+						lastSentTimestamp != g_EpochMillisecondsStart ||
+						lastSentGamertag != currentGamertag)
+					{
 						activeTitleId = XamGetCurrentTitleId();
+						lastSentTimestamp = g_EpochMillisecondsStart;
+						lastSentGamertag = currentGamertag;
 
 						if (!SendPresenceUpdate(state, activeTitleId)) {
 							XexUtils::Log::Print(
