@@ -105,6 +105,7 @@ bool g_ShowBuildNumberOnly = false;
 long g_CustomVersionNumber = 0;
 bool g_ShowProfile = true;
 bool g_ResetTimePerGame = true;
+bool g_UseFallbackDash = true;
 int g_FallbackDash = 1;
 
 bool discordFirstConnect = true;
@@ -682,7 +683,13 @@ bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
 		else if (EndsWith(ExLoadedImageName, "dash.xex"))
 			finalTitleId = 0xFFFE07D1;
 		else
-			finalTitleId = g_DashList[g_FallbackDash];
+			if (g_UseFallbackDash) {
+				finalTitleId = g_DashList[g_FallbackDash]; 
+			}
+			else {
+				wasGameShown = false;
+				return true;
+			}
 	} else if (titleId == 0xFFFE07D2) {
 		finalTitleId = GetXbox1TID("game:\\default.xbe");
 		if (finalTitleId == 0x00000000) finalTitleId = 0x01234567;
@@ -1190,6 +1197,7 @@ void LoadConfig(char *iniPath) {
 	g_ShowProfile = reader.GetBoolean("Presence", "ShowProfile", true);
 	g_ResetTimePerGame =
 	    reader.GetBoolean("Presence", "ResetTimePerGame", true);
+	g_UseFallbackDash = reader.GetBoolean("General", "UseFallbackDash", false);
 	g_FallbackDash = reader.GetInteger("General", "FallbackDash", 1);
 
 	XexUtils::Log::Print("[XeCord] Loaded XeCord.ini.");
