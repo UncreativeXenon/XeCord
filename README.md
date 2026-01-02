@@ -34,14 +34,10 @@ An **Xbox 360 Discord Rich Presence Plugin**.
 
 ## 🖼️ Screenshots
 
-<img width="355" height="160" alt="image" src="./assets/1.png" />
-<img width="355" height="160" alt="image" src="./assets/2.png" />
-<img width="355" height="160" alt="image" src="./assets/3.png" />
-<img width="355" height="160" alt="image" src="./assets/4.png" />
-<img width="355" height="160" alt="image" src="./assets/5.png" />
-<img width="355" height="160" alt="image" src="./assets/6.png" />
-<img width="355" height="160" alt="image" src="./assets/7.png" />
-<img width="355" height="160" alt="image" src="./assets/8.png" />
+<img width="355" height="160" alt="image" src="./assets/1.png" /> <img width="355" height="160" alt="image" src="./assets/2.png" />
+<img width="355" height="160" alt="image" src="./assets/3.png" /> <img width="355" height="160" alt="image" src="./assets/4.png" />
+<img width="355" height="160" alt="image" src="./assets/5.png" /> <img width="355" height="160" alt="image" src="./assets/6.png" />
+<img width="355" height="160" alt="image" src="./assets/7.png" /> <img width="355" height="160" alt="image" src="./assets/8.png" />
 
 ## 🛠️ Troubleshooting
 
