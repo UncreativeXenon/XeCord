@@ -667,6 +667,24 @@ bool IsPlatformValid(const std::string &platform) {
 	return false;
 }
 
+bool ContainsStringCI(const char* haystack, const char* needle) {
+    if (!haystack || !needle) return false;
+    if (!*needle) return true;
+    
+    for (; *haystack; ++haystack) {
+        if (tolower(*haystack) == tolower(*needle)) {
+            const char* h = haystack;
+            const char* n = needle;
+            while (*h && *n && tolower(*h) == tolower(*n)) {
+                h++; 
+                n++;
+            }
+            if (!*n) return true;
+        }
+    }
+    return false;
+}
+
 bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
 	uint32_t finalTitleId = titleId;
 	const char *finalGameName = "Unknown Game";
@@ -682,6 +700,9 @@ bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
 			finalTitleId = 0x00000166;
 		else if (EndsWith(ExLoadedImageName, "dash.xex"))
 			finalTitleId = 0xFFFE07D1;
+		else if (ContainsStringCI(ExLoadedImageName, "rsdkv5") || 
+			    (ContainsStringCI(ExLoadedImageName, "sonic") && ContainsStringCI(ExLoadedImageName, "mania")))
+			finalTitleId = 0x4D5307E7;
 		else
 			if (g_UseFallbackDash) {
 				finalTitleId = g_DashList[g_FallbackDash]; 
@@ -704,7 +725,7 @@ bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
 
 			if (g_ShowGameIcon && game.iconExists &&
 			    finalTitleId != 0x00000166 && finalTitleId != 0x00000167 &&
-			    finalTitleId != 0xFFFE07D1) {
+			    finalTitleId != 0xFFFE07D1 && finalTitleId != 0x4D5307E7) {
 				if (FetchDiscordAsset(finalTitleId, game.secondaryId,
 				                      dynamicAssetBuffer, 256)) {
 					dynamicAssetBuffer[255] = '\0';
@@ -714,7 +735,7 @@ bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
 					XexUtils::Log::Print(
 					    "[XeCord] Error: Icon Fetch failed, using "
 					    "default icon. Requested TID: %08X.",
-					    titleId);
+					    finalTitleId);
 					finalGameIconExists = false;
 				}
 			}
@@ -766,6 +787,12 @@ bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
 		finalGameName = "Xbox 360 Dashboard";
 		finalLargeImage =
 		    "mp:app-assets/1410522131762253927/1417550167074406711.png";
+		finalSmallImage = "";
+	} else if (finalTitleId == 0x4D5307E7) // Sonic Mania (RSDKv5)
+	{
+		finalGameName = "Sonic Mania (RSDKv5)";
+		finalLargeImage =
+		    "mp:app-assets/1410522131762253927/1477624510306844829.png";
 		finalSmallImage = "";
 	}
 
@@ -1299,6 +1326,7 @@ void GatewayThread(void *pArgs) {
 
 			static uint64_t lastSentTimestamp = 0;
 			std::string lastSentGamertag = "";
+			std::string lastLoadedImageName = "";
 
 			XexUtils::Log::Print("[XeCord] Discord Gateway Opened.");
 
@@ -1313,14 +1341,17 @@ void GatewayThread(void *pArgs) {
 				if (state->isAuthenticated) {
 					uint32_t currentTitleId = XamGetCurrentTitleId();
 					std::string currentGamertag = GetSafeGamertag();
+					std::string currentImageName = ExLoadedImageName ? ExLoadedImageName : "";
 
 					if (activeTitleId != currentTitleId ||
 						lastSentTimestamp != g_EpochMillisecondsStart ||
-						lastSentGamertag != currentGamertag)
+						lastSentGamertag != currentGamertag ||
+						lastLoadedImageName != currentImageName)
 					{
 						activeTitleId = currentTitleId;
 						lastSentTimestamp = g_EpochMillisecondsStart;
 						lastSentGamertag = currentGamertag;
+						lastLoadedImageName = currentImageName;
 
 						if (!SendPresenceUpdate(state, activeTitleId)) {
 							XexUtils::Log::Print(
@@ -1422,15 +1453,18 @@ void EpochMillisecondsThread(void *pArgs) {
 	g_EpochMillisecondsStart = GetValidEpoch();
 	static uint32_t lastSeenRawTitle;
 	lastSeenRawTitle = XamGetCurrentTitleId();
+	std::string lastSeenImageName = ExLoadedImageName ? ExLoadedImageName : "";
 
 	while (true) {
 		uint32_t currentTitle = XamGetCurrentTitleId();
-		if (currentTitle != lastSeenRawTitle) {
+		std::string currentImageName = ExLoadedImageName ? ExLoadedImageName : "";
+		if (currentTitle != lastSeenRawTitle || currentImageName != lastSeenImageName) {
 			wasGameShown = false;
 			if (g_ResetTimePerGame) {
 				g_EpochMillisecondsStart = GetValidEpoch();
 			}
 			lastSeenRawTitle = currentTitle;
+			lastSeenImageName = currentImageName;
 		}
 
 		Sleep(1000);
