@@ -83,14 +83,16 @@ char pluginPath[MAX_PATH];
 
 static const char *g_LastDevicePrefix = NULL;
 static const char *g_LastMountPoint = NULL;
-
 std::string g_Token = "DISCORD_TOKEN";
+
+
 
 DWORD g_BootDelay = 20000;
 bool g_ShowNotifications = true;
 bool g_NowPlayingNotifications = false;
 
 char g_PlayingOn[64] = "xbox";
+char g_Status[64] = "online";
 bool g_ShowSmallImage = true;
 bool g_ShowSmallImageOnCustomDash = false;
 bool g_SwapImages = false;
@@ -121,6 +123,11 @@ const std::string g_ValidPlatforms[] = {"xbox", "ps4", "ps5"};
 
 const size_t g_ValidPlatformCount =
     sizeof(g_ValidPlatforms) / sizeof(g_ValidPlatforms[0]);
+
+const std::string g_ValidStatuses[] = {"online", "idle", "dnd", "invisible"};
+
+const size_t g_ValidStatusCount =
+    sizeof(g_ValidStatuses) / sizeof(g_ValidStatuses[0]);
 
 volatile uint64_t g_EpochMillisecondsStart = 0;
 
@@ -667,6 +674,15 @@ bool IsPlatformValid(const std::string &platform) {
 	return false;
 }
 
+bool IsStatusValid(const std::string &status) {
+	for (size_t i = 0; i < g_ValidStatusCount; ++i) {
+		if (status == g_ValidStatuses[i]) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool ContainsStringCI(const char* haystack, const char* needle) {
     if (!haystack || !needle) return false;
     if (!*needle) return true;
@@ -910,13 +926,14 @@ bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
 	          "\"small_text\":\"%s Game\""
 	          "}"
 	          "}],"
-	          "\"status\":\"online\","
+	          "\"status\":\"%s\","
 	          "\"afk\":false"
 	          "}}",
 	          finalGameName, profileinfo.c_str(), addinfo.c_str(),
 	          playingon.c_str(), epochmilliseconds.c_str(), finalLargeImage,
 	          smallimagedata.c_str(),
-	          (titleId == 0xFFFE07D2) ? "Xbox Original" : "Xbox 360");
+	          (titleId == 0xFFFE07D2) ? "Xbox Original" : "Xbox 360",
+	          IsStatusValid(g_Status) ? g_Status : "online");
 
 	if (g_ShowNotifications && g_NowPlayingNotifications && !wasGameShown) {
 		std::stringstream nowshowingtexts;
@@ -971,7 +988,7 @@ void SendIdentify(DiscordState *state) {
 	          "\"gateway_connect_reasons\":\"AppSkeleton\""
 	          "},"
 	          "\"presence\":{"
-	          "\"status\":\"unknown\","
+	          "\"status\":\"%s\","
 	          "\"since\":0,"
 	          "\"activities\":[],"
 	          "\"afk\":false"
@@ -981,7 +998,8 @@ void SendIdentify(DiscordState *state) {
 	          "\"guild_versions\":{}"
 	          "}"
 	          "}}",
-	          g_Token.c_str(), launchId.c_str(), launchSig.c_str());
+	          g_Token.c_str(), launchId.c_str(), launchSig.c_str(),
+	          IsStatusValid(g_Status) ? g_Status : "online");
 
 	WSSend(state->socket, json);
 	delete[] json;
@@ -1203,6 +1221,8 @@ void LoadConfig(char *iniPath) {
 
 	std::string playingOnStr = reader.Get("Presence", "PlayingOn", "xbox");
 	strcpy_s(g_PlayingOn, 64, playingOnStr.c_str());
+	std::string statusStr = reader.Get("Presence", "Status", "online");
+	strcpy_s(g_Status, 64, statusStr.c_str());
 	g_ShowSmallImage = reader.GetBoolean("Presence", "ShowSmallImage", true);
 	g_ShowSmallImageOnCustomDash =
 	    reader.GetBoolean("Presence", "ShowSmallImageOnCustomDash", false);
