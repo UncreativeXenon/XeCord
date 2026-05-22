@@ -988,7 +988,7 @@ void SendIdentify(DiscordState *state) {
 	          "\"gateway_connect_reasons\":\"AppSkeleton\""
 	          "},"
 	          "\"presence\":{"
-	          "\"status\":\"%s\","
+	          "\"status\":\"unknown\","
 	          "\"since\":0,"
 	          "\"activities\":[],"
 	          "\"afk\":false"
@@ -998,8 +998,7 @@ void SendIdentify(DiscordState *state) {
 	          "\"guild_versions\":{}"
 	          "}"
 	          "}}",
-	          g_Token.c_str(), launchId.c_str(), launchSig.c_str(),
-	          IsStatusValid(g_Status) ? g_Status : "online");
+	          g_Token.c_str(), launchId.c_str(), launchSig.c_str());
 
 	WSSend(state->socket, json);
 	delete[] json;
