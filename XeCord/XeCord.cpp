@@ -1581,8 +1581,6 @@ BOOL DllMain(HINSTANCE hModule, DWORD reason, void *pReserved) {
 		break;
 	}
 	case DLL_PROCESS_DETACH: {
-		g_Hooking.RemoveAllPatches();
-
 		if (defaultInstruction != 0) {
 			*reinterpret_cast<uint16_t*>(patchAddress) = defaultInstruction;
 		}

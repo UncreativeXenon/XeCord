@@ -13,11 +13,12 @@ struct DetourContext {
 
 class Hooking {
 private:
-	std::vector<DetourContext> m_patch_context;
-	BYTE m_hook_section[0x1000];
-	DWORD m_hook_count;
+	std::vector<DetourContext> m_PatchContext;
+	BYTE m_HookSection[0x1000];//TODO: fix warning
+	DWORD m_HookCount;
 public:
 	Hooking();
+	~Hooking();
 
 	void RemoveAllPatches();
 	void ClearHookContext();
@@ -29,10 +30,10 @@ public:
 	template <typename T>
 	bool HookFunction(std::string Name, DWORD dwAddress, void* pHookFunction, T* pTrampoline) {
 		if (dwAddress > 0x80000000) {
-			DWORD* startStub = (DWORD*)&m_hook_section[m_hook_count * 0x20];
+			DWORD* startStub = (DWORD*)&m_HookSection[m_HookCount * 0x20];
 			if (!startStub) return false;
 
-			m_hook_count++;
+			m_HookCount++;
 
 			for (int i = 0; i < 7; i++) {
 				startStub[i] = 0x60000000;

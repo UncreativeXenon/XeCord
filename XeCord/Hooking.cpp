@@ -2,36 +2,35 @@
 
 #include "../deps/XexUtils/include/XexUtils.h"
 
-Hooking::Hooking() : m_patch_context(), m_hook_section(), m_hook_count(0) {
+Hooking::Hooking() : m_PatchContext(), m_HookSection(), m_HookCount(0) {
 
 }
 
+Hooking::~Hooking() {
+	RemoveAllPatches();
+}
+
 void Hooking::RemoveAllPatches() {
-	for (size_t i = 0; i < m_patch_context.size(); i++) {
-		DWORD* addr = (DWORD*)m_patch_context[i].dwAddress;
+	for (size_t i = 0; i < m_PatchContext.size(); i++) {
+		DWORD* addr = (DWORD*)m_PatchContext[i].dwAddress;
 
 		//restore original code
-		memcpy(addr, m_patch_context[i].szAsm, m_patch_context[i].iWriteSize);
+		memcpy(addr, m_PatchContext[i].szAsm, m_PatchContext[i].iWriteSize);
 
 		//flush **all 4 instructions** (16 bytes)
 		for (int i = 0; i < 4; ++i) __dcbst(0, &addr[i]);
 
 		__sync();
 		__isync();
-
-#ifdef DEVELOPER
-		logger& g_logger = get_logger();
-		g_logger.log(logger_types::LOG_SUCCESS, "Unpatched: Address=0x%X", m_patch_context[i].dwAddress);
-#endif
 	}
 
 	ClearHookContext();
 }
 
 void Hooking::ClearHookContext() {
-	m_hook_count = 0;
-	memset(m_hook_section, 0, sizeof(m_hook_section));
-	m_patch_context.clear();
+	m_HookCount = 0;
+	memset(m_HookSection, 0, sizeof(m_HookSection));
+	m_PatchContext.clear();
 }
 
 void __declspec(naked) GLPR(void) {
@@ -87,7 +86,7 @@ void Hooking::PatchInJump(DWORD* dwAddress, DWORD dwDestination, bool bLinked) {
 	ctx.iWriteSize = 0x10;//we always write 4 instructions
 	memcpy(ctx.szAsm, dwAddress, 0x10);//save original 16 bytes
 
-	m_patch_context.push_back(ctx);
+	m_PatchContext.push_back(ctx);
 
 	//build lis/ori/mtctr/bctrl
 	if (dwDestination & 0x8000)
@@ -103,11 +102,6 @@ void Hooking::PatchInJump(DWORD* dwAddress, DWORD dwDestination, bool bLinked) {
 	for (int i = 0; i < 4; ++i) __dcbst(0, &dwAddress[i]);
 	__sync();
 	__isync();
-
-#ifdef DEVELOPER
-	logger& g_logger = get_logger();
-	g_logger.log(logger_types::LOG_SUCCESS, "Patched: %X | Destination: %X", dwAddress, dwDestination);
-#endif
 }
 
 void Hooking::HookFunctionStart(DWORD* dwAddress, DWORD* dwSaveStub, DWORD dwDestination) {
@@ -146,23 +140,8 @@ bool Hooking::HookFunctionNoLink(DWORD dwAddress, void* pHookFunction) {
 	if (dwAddress > 0x80000000) {
 		PatchInJump((DWORD*)dwAddress, (DWORD)pHookFunction);
 
-#ifdef DEVELOPER
-		logger& g_logger = get_logger();
-		g_logger.log(logger_types::LOG_SUCCESS, "Hooked: Address=0x%X", dwAddress);
-#endif
-
 		return true;
 	}
 
-#ifdef DEVELOPER
-	logger& g_logger = get_logger();
-	g_logger.log(logger_types::LOG_ERROR, "Failed to hook: Address=0x%X", dwAddress);
-#endif
-
 	return false;
-}
-
-Hooking& GetHooking() {
-	static Hooking g_Hooking;
-	return g_Hooking;
 }
