@@ -707,6 +707,8 @@ bool ContainsStringCI(const char* haystack, const char* needle) {
 }
 
 bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
+	const char* appId = "1410522131762253927";//discord app ID, for the assets and shi
+
 	uint32_t finalTitleId = titleId;
 	const char *finalGameName = "Unknown Game";
 	static char gameNameBuffer[64];//for gta
@@ -783,14 +785,20 @@ bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
 			               : "");
 
 			if (finalTitleId == 0x545408A7) {
+				//pls someone add the online icon asset to the offical rich presence so i can use it here without changing app ID
+				appId = "621813072641916968";
+
 				GTA5SessionInfo& sessionInfo = GetGTA5SessionInfo();
 				if (sessionInfo.isOnline) {
 					sprintf_s(gameNameBuffer, sizeof(gameNameBuffer), "GTA 5 - Online (%d/18 Players)", sessionInfo.playerCount);
 					finalGameName = gameNameBuffer;
-					//pls someone add the online icon asset to the rich presence so i can use it here
+					finalLargeImage = "mp:app-assets/621813072641916968/1518660957985964122.png";
+					finalSmallImage = "";
 				}
 				else {
 					finalGameName = "GTA 5 - Story Mode";
+					finalLargeImage = "mp:app-assets/621813072641916968/1518660898217132234.png";
+					finalSmallImage = "";
 				}
 			}
 			break;
@@ -928,7 +936,7 @@ bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
 	          "{\"op\":3,\"d\":{"
 	          "\"since\":0,"
 	          "\"activities\":[{"
-	          "\"application_id\":\"1410522131762253927\","
+	          "\"application_id\":\"%s\","
 	          "\"name\":\"%s\","
 	          "\"type\":0,"
 	          "\"metadata\":{},"
@@ -946,7 +954,7 @@ bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
 	          "\"status\":\"%s\","
 	          "\"afk\":false"
 	          "}}",
-	          finalGameName, profileinfo.c_str(), addinfo.c_str(),
+		      appId, finalGameName, profileinfo.c_str(), addinfo.c_str(),
 	          playingon.c_str(), epochmilliseconds.c_str(), finalLargeImage,
 	          smallimagedata.c_str(),
 	          (titleId == 0xFFFE07D2) ? "Xbox Original" : "Xbox 360",
