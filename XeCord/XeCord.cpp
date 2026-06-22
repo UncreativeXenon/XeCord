@@ -2,7 +2,6 @@
 #include "INIReader.h"
 #include "XexUtils.h"
 
-#include "Hooking.h"
 #include "GTA5/Hooks.h"
 #include "GTA5/SessionInfo.h"
 
@@ -119,7 +118,6 @@ bool discordFirstConnect = true;
 bool wasGameShown = false;
 
 #define TITLE_GTA5 0x545408A7
-Hooking g_Hooking;
 
 const uint32_t g_DashList[] = {
     0xFFFE07D1, // Xbox 360 Dash
@@ -1538,9 +1536,12 @@ void HookingThread(void* pArgs) {
 				//reset initialized booleans
 				resetInitializedHookBooleans();
 
-				//hook game
+				//setup main hook
+				static XexUtils::Detour g_MainDetour(0x82CE9F98, &Hooks::MainHook);
+				g_MainDetour.Install();
+				//store original
 				Hooks::t_MainHook& originalMainHook = Hooks::GetOriginalMainHook();
-				g_Hooking.HookFunction("MainHook", 0x82CE9F98, &Hooks::MainHook, &originalMainHook);
+				originalMainHook = g_MainDetour.GetOriginal<Hooks::t_MainHook>();
 
 				//mark gta initialized
 				gta5Initialized = true;

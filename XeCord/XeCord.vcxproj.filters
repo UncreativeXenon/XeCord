@@ -17,9 +17,6 @@
     <ClCompile Include="GameDB.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Hooking.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GTA5\Invoker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -31,9 +28,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Hooking.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GTA5\Invoker.h">
       <Filter>Header Files</Filter>
     </ClInclude>

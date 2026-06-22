@@ -305,7 +305,6 @@
     <ClCompile Include="GTA5\Hooks.cpp" />
     <ClCompile Include="GTA5\Invoker.cpp" />
     <ClCompile Include="GTA5\SessionInfo.cpp" />
-    <ClCompile Include="Hooking.cpp" />
     <ClCompile Include="XeCord.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -317,7 +316,6 @@
     <ClInclude Include="GTA5\Hooks.h" />
     <ClInclude Include="GTA5\Invoker.h" />
     <ClInclude Include="GTA5\SessionInfo.h" />
-    <ClInclude Include="Hooking.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
