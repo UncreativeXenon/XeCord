@@ -710,7 +710,7 @@ bool ContainsStringCI(const char* haystack, const char* needle) {
 }
 
 bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
-	const char* appId = "1410522131762253927";//discord app ID, for the assets and shi
+	const char* appId = "1410522131762253927";//discord app ID
 
 	uint32_t finalTitleId = titleId;
 	const char *finalGameName = "Unknown Game";
@@ -1581,9 +1581,9 @@ BOOL DllMain(HINSTANCE hModule, DWORD reason, void *pReserved) {
 		break;
 	}
 	case DLL_PROCESS_DETACH: {
-		if (defaultInstruction != 0) {
+		if (defaultInstruction != 0)
 			*reinterpret_cast<uint16_t*>(patchAddress) = defaultInstruction;
-		}
+
 		break;
 	}
 	}
