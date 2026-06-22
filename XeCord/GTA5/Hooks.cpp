@@ -21,9 +21,11 @@ BOOL Hooks::MainHook(Rage::Native::NativeContext* Context) {
 
 		GTA5SessionInfo& sessionInfo = GetGTA5SessionInfo();
 		bool isOnline = Rage::Native::Invoker::Invoke<Any>(0x4BC4105E) == 1;//is in session
-		sessionInfo.changedSession = sessionInfo.isOnline != isOnline || sessionInfo.playerCount != playerCount;
+		bool lastOnlineState = sessionInfo.isOnline;
+		int lastPlayerCount = sessionInfo.playerCount;
 		sessionInfo.isOnline = isOnline;
 		sessionInfo.playerCount = playerCount;
+		sessionInfo.changedSession = lastOnlineState != isOnline || lastPlayerCount != playerCount;
 	}
 
 	return originalMainHook(Context);
