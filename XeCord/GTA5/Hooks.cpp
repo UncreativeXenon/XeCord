@@ -13,7 +13,7 @@ BOOL Hooks::MainHook(Rage::Native::NativeContext* Context) {
 	if (frameCache < frameCount) {//avoids running more than once in the same frame
 		frameCache = frameCount;
 
-		int myPlayerId = Rage::Native::Invoker::Invoke<INT>(0x8AEA886C);
+		int myPlayerId = Rage::Native::Invoker::Invoke<INT>(0x8AEA886C);//get player id
 		
 		int playerCount = 0;
 		for (int i = 0; i < 18; i++) {
