@@ -117,6 +117,9 @@ int g_FallbackDash = 1;
 bool discordFirstConnect = true;
 bool wasGameShown = false;
 
+volatile bool g_Running = true;
+HANDLE g_ThreadHandles[3] = { NULL, NULL, NULL };
+
 #define TITLE_GTA5 0x545408A7
 
 const uint32_t g_DashList[] = {
@@ -1315,7 +1318,7 @@ void GatewayThread(void *pArgs) {
 		XexUtils::Fs::UnmountPath(safeMount);
 	}
 
-	while (true) {
+	while (g_Running) {
 		Sleep(5000);
 
 		DiscordState *state = new DiscordState();
@@ -1381,7 +1384,7 @@ void GatewayThread(void *pArgs) {
 				discordFirstConnect = false;
 			}
 
-			while (state->isConnected) {
+			while (state->isConnected && g_Running) {
 				if (state->isAuthenticated) {
 					uint32_t currentTitleId = XamGetCurrentTitleId();
 					std::string currentGamertag = GetSafeGamertag();
@@ -1501,7 +1504,7 @@ void EpochMillisecondsThread(void *pArgs) {
 	lastSeenRawTitle = XamGetCurrentTitleId();
 	std::string lastSeenImageName = ExLoadedImageName ? ExLoadedImageName : "";
 
-	while (true) {
+	while (g_Running) {
 		uint32_t currentTitle = XamGetCurrentTitleId();
 		std::string currentImageName = ExLoadedImageName ? ExLoadedImageName : "";
 		if (currentTitle != lastSeenRawTitle || currentImageName != lastSeenImageName) {
@@ -1525,8 +1528,7 @@ void resetInitializedHookBooleans() {
 void HookingThread(void* pArgs) {
 	Sleep(5000);
 
-
-	while (true) {
+	while (g_Running) {
 		Sleep(1000);
 
 		DWORD titleId = XamGetCurrentTitleId();
@@ -1552,6 +1554,13 @@ void HookingThread(void* pArgs) {
 		}
 		}
 	}
+
+	//unhook gta 5 stuff
+	if (gta5Initialized) {
+		XexUtils::Detour& mainDetour = Hooks::GetMainDetour();
+		mainDetour.Remove();
+		Sleep(500);//let any ongoing hook calls finish
+	}
 }
 
 BOOL DllMain(HINSTANCE hModule, DWORD reason, void *pReserved) {
@@ -1567,13 +1576,13 @@ BOOL DllMain(HINSTANCE hModule, DWORD reason, void *pReserved) {
 		WideCharToMultiByte(CP_ACP, 0, pDataTable->FullDllName.Buffer, -1,
 		                    pluginPath, MAX_PATH, nullptr, nullptr);
 
-		XexUtils::ThreadEx(
+		g_ThreadHandles[0] = XexUtils::ThreadEx(
 		    reinterpret_cast<PTHREAD_START_ROUTINE>(EpochMillisecondsThread),
 		    (void *)0, EXCREATETHREAD_FLAG_SYSTEM);
-		XexUtils::ThreadEx(
+		g_ThreadHandles[1] = XexUtils::ThreadEx(
 		    reinterpret_cast<PTHREAD_START_ROUTINE>(GatewayThread), (void *)0,
 		    EXCREATETHREAD_FLAG_SYSTEM);
-		XexUtils::ThreadEx(
+		g_ThreadHandles[2] = XexUtils::ThreadEx(
 			reinterpret_cast<PTHREAD_START_ROUTINE>(HookingThread), (void*)0,
 			EXCREATETHREAD_FLAG_SYSTEM);
 
@@ -1582,6 +1591,16 @@ BOOL DllMain(HINSTANCE hModule, DWORD reason, void *pReserved) {
 	case DLL_PROCESS_DETACH: {
 		if (defaultInstruction != 0)
 			*reinterpret_cast<uint16_t*>(patchAddress) = defaultInstruction;
+
+		g_Running = false;
+		
+		for (int i = 0; i < 3; i++) {
+			if (g_ThreadHandles[i] != NULL) {
+				WaitForSingleObject(g_ThreadHandles[i], INFINITE);
+				CloseHandle(g_ThreadHandles[i]);
+				g_ThreadHandles[i] = NULL;
+			}
+		}
 
 		break;
 	}
