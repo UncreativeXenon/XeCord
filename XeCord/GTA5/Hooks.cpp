@@ -21,20 +21,19 @@ BOOL Hooks::MainHook(Rage::Native::NativeContext* Context) {
 			bool isActive = Rage::Native::Invoker::Invoke<Any>(0x43657B17, i) != 0;//is player active
 			if (isMe || isActive) playerCount++;
 		}
-
-		GTA5SessionInfo& sessionInfo = GetGTA5SessionInfo();
-		if (sessionInfo.updatedPresence) {
+		
+		if (GTA5SessionInfo::HasPresenceUpdated()) {
 			bool isOnline = Rage::Native::Invoker::Invoke<Any>(0x4BC4105E) != 0;//is in session
-			bool lastOnlineState = sessionInfo.isOnline;
-			int lastPlayerCount = sessionInfo.playerCount;
+			bool lastOnlineState = GTA5SessionInfo::GetIsOnline();
+			int lastPlayerCount = GTA5SessionInfo::GetPlayerCount();
 
-			sessionInfo.isOnline = isOnline;
-			sessionInfo.playerCount = playerCount;
-			sessionInfo.updatePresence = lastOnlineState != isOnline || lastPlayerCount != playerCount;
-
-			if (sessionInfo.updatePresence) {
-				sessionInfo.updatedPresence = false;
-			}
+			GTA5SessionInfo::SetIsOnline(isOnline);
+			GTA5SessionInfo::SetPlayerCount(playerCount);
+			//if data changed "data updated" tells the presense thread to update 
+			//the presence updated bool is set to false then set back to true in the presence so this doesn't flip back before that gets chance to run
+			bool dataUpdated = lastOnlineState != isOnline || lastPlayerCount != playerCount;
+			GTA5SessionInfo::SetDataUpdated(dataUpdated);
+			if (dataUpdated) GTA5SessionInfo::SetPresenceUpdated(false);
 		}
 	}
 

@@ -1,11 +1,12 @@
 #pragma once
 
-struct GTA5SessionInfo {
-	bool isOnline;
-	int playerCount;
-	bool updatePresence;
-	bool updatedPresence;
-	GTA5SessionInfo() : isOnline(false), playerCount(0), updatePresence(false), updatedPresence(true) {}
-};
-
-GTA5SessionInfo& GetGTA5SessionInfo();
+namespace GTA5SessionInfo {
+	void SetIsOnline(bool isOnline);
+	bool GetIsOnline();
+	void SetPlayerCount(int playerCount);
+	int GetPlayerCount();
+	void SetDataUpdated(bool updated);
+	bool HasDataUpdated();
+	void SetPresenceUpdated(bool updated);
+	bool HasPresenceUpdated();
+}

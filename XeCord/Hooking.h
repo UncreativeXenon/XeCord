@@ -74,5 +74,3 @@ public:
 		return false;
 	}
 };
-
-Hooking& GetHooking();

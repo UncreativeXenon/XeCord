@@ -118,6 +118,9 @@ int g_FallbackDash = 1;
 bool discordFirstConnect = true;
 bool wasGameShown = false;
 
+#define TITLE_GTA5 0x545408A7
+Hooking g_Hooking;
+
 const uint32_t g_DashList[] = {
     0xFFFE07D1, // Xbox 360 Dash
     0x00000166, // Aurora
@@ -784,13 +787,12 @@ bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
 			                 "1410522692968382586.png"
 			               : "");
 
-			if (finalTitleId == 0x545408A7) {
+			if (finalTitleId == TITLE_GTA5) {
 				//pls someone add the online icon asset to the offical rich presence so i can use it here without changing app ID
 				appId = "621813072641916968";
 
-				GTA5SessionInfo& sessionInfo = GetGTA5SessionInfo();
-				if (sessionInfo.isOnline) {
-					sprintf_s(gameNameBuffer, sizeof(gameNameBuffer), "GTA 5 - Online (%d/18 Players)", sessionInfo.playerCount);
+				if (GTA5SessionInfo::GetIsOnline()) {
+					sprintf_s(gameNameBuffer, sizeof(gameNameBuffer), "GTA 5 - Online (%d/18 Players)", GTA5SessionInfo::GetPlayerCount());
 					finalGameName = gameNameBuffer;
 					finalLargeImage = "mp:app-assets/621813072641916968/1518660957985964122.png";
 					finalSmallImage = "";
@@ -1387,18 +1389,17 @@ void GatewayThread(void *pArgs) {
 					std::string currentGamertag = GetSafeGamertag();
 					std::string currentImageName = ExLoadedImageName ? ExLoadedImageName : "";
 
-					GTA5SessionInfo& sessionInfo = GetGTA5SessionInfo();
 					if (activeTitleId != currentTitleId ||
 						lastSentTimestamp != g_EpochMillisecondsStart ||
 						lastSentGamertag != currentGamertag ||
 						lastLoadedImageName != currentImageName ||
-						sessionInfo.updatePresence)
+						GTA5SessionInfo::HasDataUpdated())
 					{
 						activeTitleId = currentTitleId;
 						lastSentTimestamp = g_EpochMillisecondsStart;
 						lastSentGamertag = currentGamertag;
 						lastLoadedImageName = currentImageName;
-						sessionInfo.updatedPresence = true;
+						GTA5SessionInfo::SetPresenceUpdated(true);
 
 						if (!SendPresenceUpdate(state, activeTitleId)) {
 							XexUtils::Log::Print(
@@ -1518,24 +1519,38 @@ void EpochMillisecondsThread(void *pArgs) {
 	}
 }
 
+bool gta5Initialized = false;
+void resetInitializedHookBooleans() {
+	gta5Initialized = false;
+}
+
 void HookingThread(void* pArgs) {
 	Sleep(5000);
 
-	bool initialized = false;
 
 	while (true) {
 		Sleep(1000);
-		if (XamGetCurrentTitleId() == 0x545408A7) {
-			if (!initialized) {
-				Hooking& g_Hooking = GetHooking();
+
+		DWORD titleId = XamGetCurrentTitleId();
+		switch (titleId) {
+		case TITLE_GTA5: {
+			if (!gta5Initialized) {
+				//reset initialized booleans
+				resetInitializedHookBooleans();
+
+				//hook game
 				Hooks::t_MainHook& originalMainHook = Hooks::GetOriginalMainHook();
 				g_Hooking.HookFunction("MainHook", 0x82CE9F98, &Hooks::MainHook, &originalMainHook);
 
-				initialized = true;
+				//mark gta initialized
+				gta5Initialized = true;
 			}
+			break;
 		}
-		else if (initialized) {
-			initialized = false;
+		default: {
+			resetInitializedHookBooleans();
+			break;
+		}
 		}
 	}
 }
@@ -1566,7 +1581,6 @@ BOOL DllMain(HINSTANCE hModule, DWORD reason, void *pReserved) {
 		break;
 	}
 	case DLL_PROCESS_DETACH: {
-		Hooking& g_Hooking = GetHooking();
 		g_Hooking.RemoveAllPatches();
 
 		if (defaultInstruction != 0) {
