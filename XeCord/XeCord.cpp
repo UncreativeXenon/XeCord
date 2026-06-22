@@ -785,8 +785,9 @@ bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
 			if (finalTitleId == 0x545408A7) {
 				GTA5SessionInfo& sessionInfo = GetGTA5SessionInfo();
 				if (sessionInfo.isOnline) {
-					sprintf_s(gameNameBuffer, sizeof(gameNameBuffer), "GTA 5 - Online (%d Players)", sessionInfo.playerCount);
+					sprintf_s(gameNameBuffer, sizeof(gameNameBuffer), "GTA 5 - Online (%d/18 Players)", sessionInfo.playerCount);
 					finalGameName = gameNameBuffer;
+					//pls someone add the online icon asset to the rich presence so i can use it here
 				}
 				else {
 					finalGameName = "GTA 5 - Story Mode";
@@ -1378,15 +1379,18 @@ void GatewayThread(void *pArgs) {
 					std::string currentGamertag = GetSafeGamertag();
 					std::string currentImageName = ExLoadedImageName ? ExLoadedImageName : "";
 
+					GTA5SessionInfo& sessionInfo = GetGTA5SessionInfo();
 					if (activeTitleId != currentTitleId ||
 						lastSentTimestamp != g_EpochMillisecondsStart ||
 						lastSentGamertag != currentGamertag ||
-						lastLoadedImageName != currentImageName)
+						lastLoadedImageName != currentImageName ||
+						sessionInfo.changedSession)
 					{
 						activeTitleId = currentTitleId;
 						lastSentTimestamp = g_EpochMillisecondsStart;
 						lastSentGamertag = currentGamertag;
 						lastLoadedImageName = currentImageName;
+						sessionInfo.changedSession = false;
 
 						if (!SendPresenceUpdate(state, activeTitleId)) {
 							XexUtils::Log::Print(
@@ -1512,6 +1516,7 @@ void HookingThread(void* pArgs) {
 	bool initialized = false;
 
 	while (true) {
+		Sleep(1000);
 		if (XamGetCurrentTitleId() == 0x545408A7) {
 			if (!initialized) {
 				Hooking& g_Hooking = GetHooking();
@@ -1524,8 +1529,6 @@ void HookingThread(void* pArgs) {
 		else if (initialized) {
 			initialized = false;
 		}
-
-		Sleep(1000);
 	}
 }
 
