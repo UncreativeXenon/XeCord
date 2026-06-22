@@ -1,6 +1,11 @@
 ﻿#include "GameDB.h"
 #include "INIReader.h"
 #include "XexUtils.h"
+
+#include "Hooking.h"
+#include "GTA5/Hooks.h"
+#include "GTA5/SessionInfo.h"
+
 #include <cstdint>
 #include <fstream>
 #include <sstream>
@@ -704,6 +709,7 @@ bool ContainsStringCI(const char* haystack, const char* needle) {
 bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
 	uint32_t finalTitleId = titleId;
 	const char *finalGameName = "Unknown Game";
+	static char gameNameBuffer[64];//for gta
 	bool finalGameIconExists = false;
 	const char *finalLargeImage =
 	    "mp:app-assets/1410522131762253927/1417550167074406711.png";
@@ -776,6 +782,16 @@ bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
 			                 "1410522692968382586.png"
 			               : "");
 
+			if (finalTitleId == 0x545408A7) {
+				GTA5SessionInfo& sessionInfo = GetGTA5SessionInfo();
+				if (sessionInfo.isOnline) {
+					sprintf_s(gameNameBuffer, sizeof(gameNameBuffer), "GTA 5 - Online (%d Players)", sessionInfo.playerCount);
+					finalGameName = gameNameBuffer;
+				}
+				else {
+					finalGameName = "GTA 5 - Story Mode";
+				}
+			}
 			break;
 		}
 	}
@@ -1490,6 +1506,29 @@ void EpochMillisecondsThread(void *pArgs) {
 	}
 }
 
+void HookingThread(void* pArgs) {
+	Sleep(5000);
+
+	bool initialized = false;
+
+	while (true) {
+		if (XamGetCurrentTitleId() == 0x545408A7) {
+			if (!initialized) {
+				Hooking& g_Hooking = GetHooking();
+				Hooks::t_MainHook& originalMainHook = Hooks::GetOriginalMainHook();
+				g_Hooking.HookFunction("MainHook", 0x82CE9F98, &Hooks::MainHook, &originalMainHook);
+
+				initialized = true;
+			}
+		}
+		else if (initialized) {
+			initialized = false;
+		}
+
+		Sleep(1000);
+	}
+}
+
 BOOL DllMain(HINSTANCE hModule, DWORD reason, void *pReserved) {
 	switch (reason) {
 	case DLL_PROCESS_ATTACH: {
@@ -1509,13 +1548,19 @@ BOOL DllMain(HINSTANCE hModule, DWORD reason, void *pReserved) {
 		XexUtils::ThreadEx(
 		    reinterpret_cast<PTHREAD_START_ROUTINE>(GatewayThread), (void *)0,
 		    EXCREATETHREAD_FLAG_SYSTEM);
+		XexUtils::ThreadEx(
+			reinterpret_cast<PTHREAD_START_ROUTINE>(HookingThread), (void*)0,
+			EXCREATETHREAD_FLAG_SYSTEM);
 
 		break;
 	}
 	case DLL_PROCESS_DETACH: {
-		if (defaultInstruction != 0)
-			*reinterpret_cast<uint16_t *>(patchAddress) = defaultInstruction;
+		Hooking& g_Hooking = GetHooking();
+		g_Hooking.RemoveAllPatches();
 
+		if (defaultInstruction != 0) {
+			*reinterpret_cast<uint16_t*>(patchAddress) = defaultInstruction;
+		}
 		break;
 	}
 	}
