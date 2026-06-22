@@ -1537,11 +1537,9 @@ void HookingThread(void* pArgs) {
 				resetInitializedHookBooleans();
 
 				//setup main hook
-				static XexUtils::Detour g_MainDetour(0x82CE9F98, &Hooks::MainHook);
-				g_MainDetour.Install();
-				//store original
-				Hooks::t_MainHook& originalMainHook = Hooks::GetOriginalMainHook();
-				originalMainHook = g_MainDetour.GetOriginal<Hooks::t_MainHook>();
+				XexUtils::Detour& mainDetour = Hooks::GetMainDetour();
+				mainDetour = XexUtils::Detour(0x82CE9F98, &Hooks::MainHook);
+				mainDetour.Install();
 
 				//mark gta initialized
 				gta5Initialized = true;

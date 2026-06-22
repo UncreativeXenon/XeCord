@@ -1,10 +1,11 @@
 #include "Hooks.h"
 #include "SessionInfo.h"
-#include <XexUtils.h>
 
-Hooks::t_MainHook originalMainHook;
-Hooks::t_MainHook& Hooks::GetOriginalMainHook() {
-	return originalMainHook;
+typedef BOOL(*t_MainHook)(Rage::Native::NativeContext*);
+
+XexUtils::Detour& Hooks::GetMainDetour() {
+	static XexUtils::Detour g_MainDetour;
+	return g_MainDetour;
 }
 
 int frameCache = 0;
@@ -37,5 +38,6 @@ BOOL Hooks::MainHook(Rage::Native::NativeContext* Context) {
 		}
 	}
 
-	return originalMainHook(Context);
+	XexUtils::Detour& mainDetour = GetMainDetour();
+	return mainDetour.GetOriginal<t_MainHook>()(Context);
 }

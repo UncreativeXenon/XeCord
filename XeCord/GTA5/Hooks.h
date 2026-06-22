@@ -1,8 +1,8 @@
 #pragma once
 #include "Invoker.h"
+#include <XexUtils.h>
 
 namespace Hooks {
-	typedef BOOL(*t_MainHook)(Rage::Native::NativeContext*);
-	t_MainHook& GetOriginalMainHook();
+	XexUtils::Detour& GetMainDetour();
 	BOOL MainHook(Rage::Native::NativeContext* Context);
 }
