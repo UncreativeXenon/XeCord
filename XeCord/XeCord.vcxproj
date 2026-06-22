@@ -54,6 +54,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Xbox 360'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>2010-01</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_91D00000|Xbox 360'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -105,6 +106,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Xbox 360'">
     <LinkIncremental>false</LinkIncremental>
     <RemoteRoot>hdd:\Plugins</RemoteRoot>
+    <OutDir>$(SolutionDir)build\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_91D00000|Xbox 360'">
     <LinkIncremental>false</LinkIncremental>
