@@ -11,16 +11,18 @@ BOOL Hooks::MainHook(Rage::Native::NativeContext* Context) {
 	int frameCount = Rage::Native::Invoker::Invoke<INT>(0xB477A015);//get frame count
 	if (frameCache < frameCount) {//avoids running more than once in the same frame
 		frameCache = frameCount;
+
+		int myPlayerId = Rage::Native::Invoker::Invoke<INT>(0x8AEA886C);
 		
 		int playerCount = 0;
-		for (size_t i = 0; i < 18; i++) {
-			bool isMe = i == Rage::Native::Invoker::Invoke<Any>(0x8AEA886C);//get player id
-			bool isActive = Rage::Native::Invoker::Invoke<Any>(0x43657B17, i) == 1;//is player active
+		for (int i = 0; i < 18; i++) {
+			bool isMe = i == myPlayerId;//get player id
+			bool isActive = Rage::Native::Invoker::Invoke<INT>(0x43657B17, i) != 0;//is player active
 			if (isMe || isActive) playerCount++;
 		}
 
 		GTA5SessionInfo& sessionInfo = GetGTA5SessionInfo();
-		bool isOnline = Rage::Native::Invoker::Invoke<Any>(0x4BC4105E) == 1;//is in session
+		bool isOnline = Rage::Native::Invoker::Invoke<INT>(0x43657B17, myPlayerId) != 0;//is player active
 		bool lastOnlineState = sessionInfo.isOnline;
 		int lastPlayerCount = sessionInfo.playerCount;
 		sessionInfo.isOnline = isOnline;
