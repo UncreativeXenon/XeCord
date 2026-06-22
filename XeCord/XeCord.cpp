@@ -788,7 +788,7 @@ bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
 			               : "");
 
 			if (finalTitleId == TITLE_GTA5) {
-				//pls someone add the online icon asset to the offical rich presence so i can use it here without changing app ID
+				//TODO: pls add the online icon asset to the offical rich presence and remove the stuff that changes app ID
 				appId = "621813072641916968";
 
 				if (GTA5SessionInfo::GetIsOnline()) {
