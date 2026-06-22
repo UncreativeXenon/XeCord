@@ -1392,13 +1392,13 @@ void GatewayThread(void *pArgs) {
 						lastSentTimestamp != g_EpochMillisecondsStart ||
 						lastSentGamertag != currentGamertag ||
 						lastLoadedImageName != currentImageName ||
-						sessionInfo.changedSession)
+						sessionInfo.updatePresence)
 					{
 						activeTitleId = currentTitleId;
 						lastSentTimestamp = g_EpochMillisecondsStart;
 						lastSentGamertag = currentGamertag;
 						lastLoadedImageName = currentImageName;
-						sessionInfo.changedSession = false;
+						sessionInfo.updatedPresence = true;
 
 						if (!SendPresenceUpdate(state, activeTitleId)) {
 							XexUtils::Log::Print(
