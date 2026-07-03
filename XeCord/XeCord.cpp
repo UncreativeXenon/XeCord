@@ -1,6 +1,10 @@
 ﻿#include "GameDB.h"
 #include "INIReader.h"
-#include "XexUtils.h"
+#include "SessionInfo.h"
+#include "Hooks.h"
+
+#include <XexUtils.h>
+
 #include <cstdint>
 #include <fstream>
 #include <sstream>
@@ -112,6 +116,12 @@ int g_FallbackDash = 1;
 
 bool discordFirstConnect = true;
 bool wasGameShown = false;
+
+volatile bool g_Running = true;
+HANDLE g_ThreadHandles[3] = { NULL, NULL, NULL };
+
+#define TITLE_GTA5 0x545408A7
+#define TITLE_BO2 0x415608C3
 
 const uint32_t g_DashList[] = {
     0xFFFE07D1, // Xbox 360 Dash
@@ -702,8 +712,11 @@ bool ContainsStringCI(const char* haystack, const char* needle) {
 }
 
 bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
+	const char* appId = "1410522131762253927";//discord app ID
+
 	uint32_t finalTitleId = titleId;
 	const char *finalGameName = "Unknown Game";
+	static char gameNameBuffer[64];//for gta
 	bool finalGameIconExists = false;
 	const char *finalLargeImage =
 	    "mp:app-assets/1410522131762253927/1417550167074406711.png";
@@ -776,6 +789,22 @@ bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
 			                 "1410522692968382586.png"
 			               : "");
 
+			if (finalTitleId == TITLE_GTA5) {
+				//TODO: pls add the online icon asset to the offical rich presence and remove the stuff that changes app ID
+				appId = "621813072641916968";
+
+				if (g_GTA5_SessionInfo.GetIsOnline()) {
+					sprintf_s(gameNameBuffer, sizeof(gameNameBuffer), "GTA 5 - Online (%d/%d Players)", g_GTA5_SessionInfo.GetPlayerCount(), g_GTA5_SessionInfo.GetMaxPlayerCount());
+					finalGameName = gameNameBuffer;
+					finalLargeImage = "mp:app-assets/621813072641916968/1518660957985964122.png";
+					finalSmallImage = "";
+				}
+				else {
+					finalGameName = "GTA 5 - Story Mode";
+					finalLargeImage = "mp:app-assets/621813072641916968/1518660898217132234.png";
+					finalSmallImage = "";
+				}
+			}
 			break;
 		}
 	}
@@ -911,7 +940,7 @@ bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
 	          "{\"op\":3,\"d\":{"
 	          "\"since\":0,"
 	          "\"activities\":[{"
-	          "\"application_id\":\"1410522131762253927\","
+	          "\"application_id\":\"%s\","
 	          "\"name\":\"%s\","
 	          "\"type\":0,"
 	          "\"metadata\":{},"
@@ -929,7 +958,7 @@ bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
 	          "\"status\":\"%s\","
 	          "\"afk\":false"
 	          "}}",
-	          finalGameName, profileinfo.c_str(), addinfo.c_str(),
+		      appId, finalGameName, profileinfo.c_str(), addinfo.c_str(),
 	          playingon.c_str(), epochmilliseconds.c_str(), finalLargeImage,
 	          smallimagedata.c_str(),
 	          (titleId == 0xFFFE07D2) ? "Xbox Original" : "Xbox 360",
@@ -1290,7 +1319,7 @@ void GatewayThread(void *pArgs) {
 		XexUtils::Fs::UnmountPath(safeMount);
 	}
 
-	while (true) {
+	while (g_Running) {
 		Sleep(5000);
 
 		DiscordState *state = new DiscordState();
@@ -1356,7 +1385,7 @@ void GatewayThread(void *pArgs) {
 				discordFirstConnect = false;
 			}
 
-			while (state->isConnected) {
+			while (state->isConnected && g_Running) {
 				if (state->isAuthenticated) {
 					uint32_t currentTitleId = XamGetCurrentTitleId();
 					std::string currentGamertag = GetSafeGamertag();
@@ -1365,12 +1394,14 @@ void GatewayThread(void *pArgs) {
 					if (activeTitleId != currentTitleId ||
 						lastSentTimestamp != g_EpochMillisecondsStart ||
 						lastSentGamertag != currentGamertag ||
-						lastLoadedImageName != currentImageName)
+						lastLoadedImageName != currentImageName ||
+						g_GTA5_SessionInfo.HasDataUpdated())
 					{
 						activeTitleId = currentTitleId;
 						lastSentTimestamp = g_EpochMillisecondsStart;
 						lastSentGamertag = currentGamertag;
 						lastLoadedImageName = currentImageName;
+						g_GTA5_SessionInfo.SetPresenceUpdated(true);
 
 						if (!SendPresenceUpdate(state, activeTitleId)) {
 							XexUtils::Log::Print(
@@ -1474,7 +1505,7 @@ void EpochMillisecondsThread(void *pArgs) {
 	lastSeenRawTitle = XamGetCurrentTitleId();
 	std::string lastSeenImageName = ExLoadedImageName ? ExLoadedImageName : "";
 
-	while (true) {
+	while (g_Running) {
 		uint32_t currentTitle = XamGetCurrentTitleId();
 		std::string currentImageName = ExLoadedImageName ? ExLoadedImageName : "";
 		if (currentTitle != lastSeenRawTitle || currentImageName != lastSeenImageName) {
@@ -1487,6 +1518,49 @@ void EpochMillisecondsThread(void *pArgs) {
 		}
 
 		Sleep(1000);
+	}
+}
+
+bool gta5Initialized = false;
+void resetInitializedHookBooleans() {
+	gta5Initialized = false;
+}
+
+void HookingThread(void* pArgs) {
+	Sleep(5000);
+
+	while (g_Running) {
+		Sleep(1000);
+
+		DWORD titleId = XamGetCurrentTitleId();
+		switch (titleId) {
+		case TITLE_GTA5: {
+			if (!gta5Initialized) {
+				//reset initialized booleans
+				resetInitializedHookBooleans();
+
+				//setup main hook
+				XexUtils::Detour& mainDetour = Hooks::GTA5::GetMainDetour();
+				mainDetour = XexUtils::Detour(0x82CE9F98, &Hooks::GTA5::MainHook);//ScriptHook
+				mainDetour.Install();
+
+				//mark gta initialized
+				gta5Initialized = true;
+			}
+			break;
+		}
+		default: {
+			resetInitializedHookBooleans();
+			break;
+		}
+		}
+	}
+
+	//unhook gta 5
+	if (gta5Initialized) {//exited loop while gta 5 is open
+		XexUtils::Detour& mainDetour = Hooks::GTA5::GetMainDetour();
+		mainDetour.Remove();
+		Sleep(500);//let any ongoing hook calls finish
 	}
 }
 
@@ -1503,18 +1577,31 @@ BOOL DllMain(HINSTANCE hModule, DWORD reason, void *pReserved) {
 		WideCharToMultiByte(CP_ACP, 0, pDataTable->FullDllName.Buffer, -1,
 		                    pluginPath, MAX_PATH, nullptr, nullptr);
 
-		XexUtils::ThreadEx(
+		g_ThreadHandles[0] = XexUtils::ThreadEx(
 		    reinterpret_cast<PTHREAD_START_ROUTINE>(EpochMillisecondsThread),
 		    (void *)0, EXCREATETHREAD_FLAG_SYSTEM);
-		XexUtils::ThreadEx(
+		g_ThreadHandles[1] = XexUtils::ThreadEx(
 		    reinterpret_cast<PTHREAD_START_ROUTINE>(GatewayThread), (void *)0,
 		    EXCREATETHREAD_FLAG_SYSTEM);
+		g_ThreadHandles[2] = XexUtils::ThreadEx(
+			reinterpret_cast<PTHREAD_START_ROUTINE>(HookingThread), (void*)0,
+			EXCREATETHREAD_FLAG_SYSTEM);
 
 		break;
 	}
 	case DLL_PROCESS_DETACH: {
 		if (defaultInstruction != 0)
-			*reinterpret_cast<uint16_t *>(patchAddress) = defaultInstruction;
+			*reinterpret_cast<uint16_t*>(patchAddress) = defaultInstruction;
+
+		g_Running = false;
+		
+		for (int i = 0; i < 3; i++) {
+			if (g_ThreadHandles[i] != NULL) {
+				WaitForSingleObject(g_ThreadHandles[i], INFINITE);
+				CloseHandle(g_ThreadHandles[i]);
+				g_ThreadHandles[i] = NULL;
+			}
+		}
 
 		break;
 	}
