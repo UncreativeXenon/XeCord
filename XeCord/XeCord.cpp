@@ -1,9 +1,9 @@
 ﻿#include "GameDB.h"
 #include "INIReader.h"
-#include "XexUtils.h"
+#include "SessionInfo.h"
+#include "Hooks.h"
 
-#include "GTA5/Hooks.h"
-#include "GTA5/SessionInfo.h"
+#include <XexUtils.h>
 
 #include <cstdint>
 #include <fstream>
@@ -121,6 +121,7 @@ volatile bool g_Running = true;
 HANDLE g_ThreadHandles[3] = { NULL, NULL, NULL };
 
 #define TITLE_GTA5 0x545408A7
+#define TITLE_BO2 0x415608C3
 
 const uint32_t g_DashList[] = {
     0xFFFE07D1, // Xbox 360 Dash
@@ -792,8 +793,8 @@ bool SendPresenceUpdate(DiscordState *state, uint32_t titleId) {
 				//TODO: pls add the online icon asset to the offical rich presence and remove the stuff that changes app ID
 				appId = "621813072641916968";
 
-				if (GTA5SessionInfo::GetIsOnline()) {
-					sprintf_s(gameNameBuffer, sizeof(gameNameBuffer), "GTA 5 - Online (%d/18 Players)", GTA5SessionInfo::GetPlayerCount());
+				if (g_GTA5_SessionInfo.GetIsOnline()) {
+					sprintf_s(gameNameBuffer, sizeof(gameNameBuffer), "GTA 5 - Online (%d/%d Players)", g_GTA5_SessionInfo.GetPlayerCount(), g_GTA5_SessionInfo.GetMaxPlayerCount());
 					finalGameName = gameNameBuffer;
 					finalLargeImage = "mp:app-assets/621813072641916968/1518660957985964122.png";
 					finalSmallImage = "";
@@ -1394,13 +1395,13 @@ void GatewayThread(void *pArgs) {
 						lastSentTimestamp != g_EpochMillisecondsStart ||
 						lastSentGamertag != currentGamertag ||
 						lastLoadedImageName != currentImageName ||
-						GTA5SessionInfo::HasDataUpdated())
+						g_GTA5_SessionInfo.HasDataUpdated())
 					{
 						activeTitleId = currentTitleId;
 						lastSentTimestamp = g_EpochMillisecondsStart;
 						lastSentGamertag = currentGamertag;
 						lastLoadedImageName = currentImageName;
-						GTA5SessionInfo::SetPresenceUpdated(true);
+						g_GTA5_SessionInfo.SetPresenceUpdated(true);
 
 						if (!SendPresenceUpdate(state, activeTitleId)) {
 							XexUtils::Log::Print(
@@ -1539,8 +1540,8 @@ void HookingThread(void* pArgs) {
 				resetInitializedHookBooleans();
 
 				//setup main hook
-				XexUtils::Detour& mainDetour = Hooks::GetMainDetour();
-				mainDetour = XexUtils::Detour(0x82CE9F98, &Hooks::MainHook);
+				XexUtils::Detour& mainDetour = Hooks::GTA5::GetMainDetour();
+				mainDetour = XexUtils::Detour(0x82CE9F98, &Hooks::GTA5::MainHook);//ScriptHook
 				mainDetour.Install();
 
 				//mark gta initialized
@@ -1555,9 +1556,9 @@ void HookingThread(void* pArgs) {
 		}
 	}
 
-	//unhook gta 5 stuff
-	if (gta5Initialized) {
-		XexUtils::Detour& mainDetour = Hooks::GetMainDetour();
+	//unhook gta 5
+	if (gta5Initialized) {//exited loop while gta 5 is open
+		XexUtils::Detour& mainDetour = Hooks::GTA5::GetMainDetour();
 		mainDetour.Remove();
 		Sleep(500);//let any ongoing hook calls finish
 	}

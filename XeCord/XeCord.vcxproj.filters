@@ -9,6 +9,12 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
+    <Filter Include="Header Files\GTA5">
+      <UniqueIdentifier>{c06c62d5-4832-4f60-b8d8-539ff88c38c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GTA5">
+      <UniqueIdentifier>{af8d5ca6-dc2c-4fc2-9f8d-2ff005c4e0de}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="XeCord.cpp">
@@ -17,25 +23,28 @@
     <ClCompile Include="GameDB.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GTA5\Invoker.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="GTA5_Hooks.cpp">
+      <Filter>Source Files\GTA5</Filter>
     </ClCompile>
-    <ClCompile Include="GTA5\Hooks.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="GTA5_Invoker.cpp">
+      <Filter>Source Files\GTA5</Filter>
     </ClCompile>
-    <ClCompile Include="GTA5\SessionInfo.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="SessionInfo.cpp">
+      <Filter>Source Files\GTA5</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GTA5\Invoker.h">
+    <ClInclude Include="SessionInfo.h">
+      <Filter>Header Files\GTA5</Filter>
+    </ClInclude>
+    <ClInclude Include="GTA5_Invoker.h">
+      <Filter>Header Files\GTA5</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GTA5\Hooks.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GTA5\SessionInfo.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Hooks.h">
+      <Filter>Header Files\GTA5</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

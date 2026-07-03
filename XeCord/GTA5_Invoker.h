@@ -1,113 +1,6 @@
 #pragma once
 #include <xtl.h>
-
-typedef unsigned __int64 QWORD;
-typedef void* Void;
-typedef int Any;
-typedef unsigned int uint;
-typedef int Hash;
-typedef int Entity;
-typedef int Player;
-typedef int FireId;
-typedef int Ped;
-typedef int Vehicle;
-typedef int Cam;
-typedef int CarGenerator;
-typedef int Group;
-typedef int Train;
-typedef int Pickup;
-typedef int Object;
-typedef int Weapon;
-typedef int Interior;
-typedef int Blip;
-typedef int Texture;
-typedef int TextureDict;
-typedef int CoverPoint;
-typedef int Camera;
-typedef int TaskSequence;
-typedef int ColourIndex;
-typedef int Sphere;
-typedef int ScrHandle;
-
-typedef struct _Vector3 {
-	float x;
-	float y;
-	float z;
-	_Vector3& operator/(float Amount) {
-		x /= Amount;
-		y /= Amount;
-		z /= Amount;
-		return *this;
-	}
-	_Vector3& operator/(const _Vector3& Vector) {
-		x /= Vector.x;
-		y /= Vector.y;
-		z /= Vector.z;
-		return *this;
-	}
-	_Vector3& operator*(float Amount) {
-		x *= Amount;
-		y *= Amount;
-		z *= Amount;
-		return *this;
-	}
-	_Vector3& operator*(const _Vector3& Vector) {
-		x *= Vector.x;
-		y *= Vector.y;
-		z *= Vector.z;
-		return *this;
-	}
-	_Vector3& operator+(float Amount) {
-		x += Amount;
-		y += Amount;
-		z += Amount;
-		return *this;
-	}
-	_Vector3& operator+(const _Vector3& Vector) {
-		x += Vector.x;
-		y += Vector.y;
-		z += Vector.z;
-		return *this;
-	}
-	_Vector3& operator-(float Amount) {
-		x -= Amount;
-		y -= Amount;
-		z -= Amount;
-		return *this;
-	}
-	_Vector3& operator-(const _Vector3& Vector) {
-		x -= Vector.x;
-		y -= Vector.y;
-		z -= Vector.z;
-		return *this;
-	}
-} Vector3, * PVector3;
-
-struct DateTime
-{
-	int m_iYear;
-	int m_iMonth;
-	int m_iDay;
-	int m_iHour;
-	int m_iMinute;
-	int m_iSecond;
-};
-
-class waterQuad
-{
-public:
-	__int16 minX;
-	__int16 minY;
-	__int16 maxX;
-	__int16 maxY;
-	BYTE a1;
-	BYTE a2;
-	BYTE a3;
-	BYTE a4;
-	char _0x000C[8];
-	float height;
-	char _0x0018[4];
-};
+#include "Vector3.h"
 
 namespace Rage {
 	namespace Native {
@@ -152,8 +45,7 @@ namespace Rage {
 
 			template <typename T>
 			T GetResult() {
-				unsigned int _83524878 = 0x83524878;//todo: put backend
-				((VOID(*)(NativeContext*))_83524878)(this);
+				reinterpret_cast<void(*)(NativeContext*)>(0x83524878)(this);
 				return *(T*)(this->m_szTempStack);
 			}
 		};
